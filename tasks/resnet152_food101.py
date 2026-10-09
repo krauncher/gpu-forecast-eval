@@ -1,23 +1,13 @@
 """ResNet-152 training on Food-101, 3 epochs x 150 batches — calibration task 18 (fast).
 
-The function below is the task, unchanged. FUNC is the task, OPTIONS the
-arguments of its @client.task decorator, KWARGS the arguments of the call.
-The expected forecast and its sources are in resnet152_food101.json.
+Neutral form of the task: a plain script, runnable on any machine with a GPU
+(`python tasks/resnet152_food101.py`); the dataset is downloaded from its public URL into
+./data when missing. KWARGS are the call arguments. The expected forecast and
+its sources are in resnet152_food101.json; the form a service takes is in
+variants/<service>/resnet152_food101.py.
 """
 
-OPTIONS = dict(
-    timeout=3600,
-    pip=[],
-    data='food-101',
-)
-
-# Data sources the task reads (OPTIONS["data"]), registered on the account
-# by run.py when missing. Food-101, ETH Zurich (public).
-DATA_SOURCES = [
-    dict(name="food-101", urls=["http://data.vision.ee.ethz.ch/cvl/food-101.tar.gz"], size_gb=5.0),
-]
-
-KWARGS = dict(epochs=3, batch_size=64, lr=0.01, max_batches=150)
+KWARGS = {'batch_size': 64, 'epochs': 3, 'lr': 0.01, 'max_batches': 150}
 
 
 def train_resnet152(epochs: int, batch_size: int, lr: float, max_batches: int = 0):
@@ -39,13 +29,18 @@ def train_resnet152(epochs: int, batch_size: int, lr: float, max_batches: int = 
         print(f"GPU: {torch.cuda.get_device_name(0)}")
 
     # ── Unpack dataset ──
-    data_root = "/data/food-101"
-    archive = "/data/food-101.tar.gz"
+    data_root = "data/food-101"
+    archive = "data/food-101.tar.gz"
+    if not os.path.isdir(data_root) and not os.path.isfile(archive):
+        import urllib.request
+        os.makedirs("data", exist_ok=True)
+        print("Downloading Food-101 (~5 GB)...")
+        urllib.request.urlretrieve("http://data.vision.ee.ethz.ch/cvl/food-101.tar.gz", archive)
     if not os.path.isdir(data_root) and os.path.isfile(archive):
         print("Extracting dataset...")
         t0 = time.time()
         with tarfile.open(archive, "r:gz") as tar:
-            tar.extractall("/data")
+            tar.extractall("data")
         print(f"Extracted in {time.time() - t0:.1f}s")
 
     # ── Build train split from meta/train.txt ──
@@ -123,4 +118,5 @@ def train_resnet152(epochs: int, batch_size: int, lr: float, max_batches: int = 
     }
 
 
-FUNC = train_resnet152
+if __name__ == "__main__":
+    print(train_resnet152(**KWARGS))

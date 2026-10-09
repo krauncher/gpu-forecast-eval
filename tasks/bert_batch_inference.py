@@ -1,19 +1,12 @@
 """BERT batch inference — tutorial 35.
 
-The function below is the task, unchanged. FUNC is the task, OPTIONS the
-arguments of its @client.task decorator, KWARGS the arguments of the call.
-The expected forecast and its sources are in bert_batch_inference.json.
+Neutral form of the task: a plain script, runnable on any machine with a GPU
+(`python tasks/bert_batch_inference.py`); models and datasets by their public Hugging Face
+ids. KWARGS are the call arguments. The expected forecast and its sources are
+in bert_batch_inference.json; the form a service takes is in variants/<service>/bert_batch_inference.py.
 """
 
-OPTIONS = dict(
-    timeout=900,
-    data_urls=['hf://models/google-bert/bert-base-uncased'],
-    dataset_size=1,
-    disk_gb=10,
-    stream_stderr=True,
-)
-
-KWARGS = dict()
+KWARGS = {}
 
 
 def bert_batch_inference(batch_size: int = 64, max_length: int = 128):
@@ -27,7 +20,7 @@ def bert_batch_inference(batch_size: int = 64, max_length: int = 128):
     print(f"Imports done in {time.monotonic() - _t_imp:.1f}s.", flush=True)
 
     t0 = time.monotonic()
-    model_path = "/data/google-bert__bert-base-uncased"
+    model_path = "google-bert/bert-base-uncased"
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSequenceClassification.from_pretrained(
@@ -70,4 +63,5 @@ def bert_batch_inference(batch_size: int = 64, max_length: int = 128):
     }
 
 
-FUNC = bert_batch_inference
+if __name__ == "__main__":
+    print(bert_batch_inference(**KWARGS))
