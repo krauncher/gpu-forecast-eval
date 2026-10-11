@@ -8,11 +8,14 @@ service takes is in variants/<service>/lambdalabs/ncf_ml20m_bs10m.py.
 
 Source (the measured workload):
 - Benchmark: github.com/lambdal/deeplearning-benchmark, commit aa5addb6
-  (2025-12-17), pytorch/scripts/config_v1/config_pytorch_80GB.sh and
-  config_pytorch_48GB.sh, PyTorch_ncf_FP16_PARAMS: ncf.py --data
-  /data/ncf/cache/ml-20m --epochs 2 --batch_size 10000000
-  (scripts/benchmark_pytorch.sh, benchmark_pytorch_ncf). The "FP16" set does
-  not pass --amp, so the run computes in fp32.
+  (2025-12-17), pytorch/scripts/config_v1/config_pytorch_80GB.sh,
+  PyTorch_ncf_FP16_PARAMS: ncf.py --data /data/ncf/cache/ml-20m --epochs 2
+  --batch_size 10000000 (scripts/benchmark_pytorch.sh, benchmark_pytorch_ncf).
+  The 80 GB "FP16" set does not pass --amp, and the rows' own logs record it
+  (pytorch/results/A100_80GB_SXM4_v1, A100_80GB_PCIe_v1, H100_80GB_PCIe5_v1,
+  H100_80GB_SXM5_v1 / PyTorch_ncf_FP16: "amp : False"), so the run computes
+  in fp32. The 48 GB cards ran the same batch with --amp: that is
+  ncf_ml20m_amp_bs10m.
 - Code it runs: github.com/LambdaLabsML/DeepLearningExamples, branch
   lambda/benchmark, commit 667536cc (2025-12-10), PyTorch/Recommendation/NCF.
 

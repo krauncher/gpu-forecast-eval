@@ -117,8 +117,9 @@ Published benchmarks (`tasks/<source>/`, independent measurements):
 | `lambdalabs/bert_base_squad_amp_bs96` | BERT-base fine-tuning on SQuAD v1.1, mixed precision, batch 96, 101 steps; Lambda GPU benchmark (RTX 4090, RTX 3090, 24 GB) |
 | `lambdalabs/bert_large_squad_amp_bs112` | BERT-large fine-tuning on SQuAD v1.1, mixed precision, batch 112, 101 steps; Lambda GPU benchmark (A100 / H100 80 GB) |
 | `lambdalabs/bert_large_squad_amp_bs64` | BERT-large fine-tuning on SQuAD v1.1, mixed precision, batch 64, 101 steps; Lambda GPU benchmark (RTX 6000 Ada, RTX A6000, Quadro RTX 8000, 48 GB) |
-| `lambdalabs/ncf_ml20m_bs10m` | NCF (NeuMF) training on MovieLens-20M, batch 10 000 000, 2 epochs, fp32; Lambda GPU benchmark (A100 / H100 80 GB, RTX 6000 Ada, RTX A6000, Quadro RTX 8000) |
-| `lambdalabs/ncf_ml20m_bs4278184` | NCF (NeuMF) training on MovieLens-20M, batch 4 278 184, 2 epochs, fp32; Lambda GPU benchmark (RTX 4090, RTX 3090, A10, 24 GB) |
+| `lambdalabs/ncf_ml20m_bs10m` | NCF (NeuMF) training on MovieLens-20M, batch 10 000 000, 2 epochs, fp32; Lambda GPU benchmark (A100 / H100 80 GB) |
+| `lambdalabs/ncf_ml20m_amp_bs10m` | NCF (NeuMF) training on MovieLens-20M, mixed precision (apex amp O2), batch 10 000 000, 2 epochs; Lambda GPU benchmark (RTX 6000 Ada, RTX A6000, Quadro RTX 8000, 48 GB) |
+| `lambdalabs/ncf_ml20m_bs4278184` | NCF (NeuMF) training on MovieLens-20M, mixed precision (apex amp O2), batch 4 278 184, 2 epochs; Lambda GPU benchmark (RTX 4090, RTX 3090, A10, 24 GB) |
 | `lambdalabs/waveglow_ljs625_bs48` | WaveGlow training on LJSpeech (625 clips, 8000-sample segments), batch 48, 2 epochs, fp32; model and data code verbatim from NVIDIA DeepLearningExamples (BSD 3-Clause); Lambda GPU benchmark (A100 / H100 80 GB) |
 | `lambdalabs/waveglow_ljs625_bs32` | the same WaveGlow training, batch 32; Lambda GPU benchmark (RTX 6000 Ada, RTX A6000, Quadro RTX 8000) |
 | `lambdalabs/waveglow_ljs625_bs18` | the same WaveGlow training, batch 18; Lambda GPU benchmark (RTX 4090, RTX 3090, A10, 24 GB) |
