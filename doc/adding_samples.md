@@ -132,7 +132,7 @@ obtained.
 | `independent` | `true` unless the values come from the tested service's own calibration data |
 | `source`, `date`, `hardware` | where the values are published or who measured, when, on what (GPUs, host, driver, CUDA, framework versions) |
 | `reference_sec` | whole task, seconds, on the reference card (RTX PRO 6000 Blackwell). Leave out if the reference card was not measured |
-| `min_vram_gb` | peak GPU memory of the run, GB |
+| `min_vram_gb` | peak GPU memory of the run, GiB (nvidia-smi MiB / 1024): the unit of card sizes, a "24 GB" card holds 24 GiB |
 | `vram_gb_at_most` | an upper bound on the peak, GB, when only that is known: the run completed on a card of that size |
 | `compute_ratio` | per GPU: compute time on that GPU / compute time on the anchor GPU. Compute = whole task minus data download and environment setup |
 | `anchor_compute_sec` | compute time of the task on the anchor GPU, seconds: measured, or the work of the task / the published throughput (work in the throughput's unit: images, sequences, tokens). The stand compares it with the service's compute time on the reference card times its ratio for the anchor GPU. Leave out when the work cannot be stated in that unit |
