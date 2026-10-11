@@ -4,7 +4,7 @@
     "workload_type": "training",
     "mode": "training",
     "framework": "pytorch",
-    "precision": "fp32",
+    "precision": "fp16",
     "params_billions": 0.0318,
     "batch_size": 4278184,
     "epochs": 2,
@@ -12,7 +12,7 @@
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-10: a recommender (embeddings + MLP) fits no leaf workload, so `training`; precision fp32 (the benchmark's FP16 set passes no --amp); params = (138 493 users + 26 744 items) x (64 + 128) embedding weights + MLP and final layers = 31.83 M; dataset_samples = MovieLens-20M ratings minus one test rating per user (20 000 263 - 138 493), each epoch adds 4 negatives per positive"
+    "classification": "labelled from the task code, 2026-10-10: a recommender (embeddings + MLP) fits no leaf workload, so `training`; precision fp16 (the benchmark's 24 GB FP16 set passes --amp: apex amp O2; the task uses autocast); params = (138 493 users + 26 744 items) x (64 + 128) embedding weights + MLP and final layers = 31.83 M; dataset_samples = MovieLens-20M ratings minus one test rating per user (20 000 263 - 138 493), each epoch adds 4 negatives per positive"
   },
   "measurements": [
     {

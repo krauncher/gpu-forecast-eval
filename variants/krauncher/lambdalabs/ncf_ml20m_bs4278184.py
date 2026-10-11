@@ -73,6 +73,7 @@ def train_ncf_ml20m(batch_size: int = 4_278_184, epochs: int = 2):
     model = NeuMF().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0045, betas=(0.25, 0.5), eps=1e-8)
     criterion = nn.BCEWithLogitsLoss()
+    scaler = torch.cuda.amp.GradScaler()
 
     throughputs, hr = [], 0.0
     for epoch in range(epochs):
@@ -84,16 +85,18 @@ def train_ncf_ml20m(batch_size: int = 4_278_184, epochs: int = 2):
                             torch.zeros(len(train_items) * negative_samples, device=device)))
         order = torch.randperm(len(users), device=device)
         for idx in order.split(batch_size)[:-1]:
-            loss = criterion(model(users[idx], items[idx]).view(-1), labels[idx])
-            loss.backward()
-            optimizer.step()
+            with torch.cuda.amp.autocast():
+                loss = criterion(model(users[idx], items[idx]).view(-1), labels[idx])
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             optimizer.zero_grad(set_to_none=True)
         torch.cuda.synchronize()
         throughputs.append(len(users) / (time.time() - begin))
         del users, items, labels, order
 
         model.eval()
-        with torch.no_grad():
+        with torch.no_grad(), torch.cuda.amp.autocast():
             scores = torch.cat([model(u, i) for u, i in zip(test_users.split(2 ** 20), test_items.split(2 ** 20))])
             top = torch.topk(scores.view(-1, valid_negative + 1), 10)[1]
             hr = (top == 0).any(dim=1).float().mean().item()
