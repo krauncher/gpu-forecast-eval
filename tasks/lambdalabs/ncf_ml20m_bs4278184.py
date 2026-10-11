@@ -12,9 +12,11 @@ Source (the measured workload):
   PyTorch_ncf_FP16_PARAMS: ncf.py --data /data/ncf/cache/ml-20m --epochs 2
   --batch_size 4278184 --amp
   (scripts/benchmark_pytorch.sh, benchmark_pytorch_ncf). The 24 GB "FP16" set
-  passes --amp (as the 48 GB one does; the 80 GB one does not), so the run is
-  in mixed precision: apex amp, opt_level O2, dynamic loss scale
-  (ncf.py:251-253).
+  passes --amp, and the rows' own logs record it (pytorch/results/4090_v1,
+  3090_v1, LambdaCloud_A10_v1 / PyTorch_ncf_FP16: "amp : True", "Selected
+  optimization level O2", batch_size 4278184): apex amp, opt_level O2,
+  dynamic loss scale (ncf.py:251-253) — the model in half precision with fp32
+  master weights. Needs NVIDIA apex, as the benchmark's NGC container has.
 - Code it runs: github.com/LambdaLabsML/DeepLearningExamples, branch
   lambda/benchmark, commit 667536cc (2025-12-10), PyTorch/Recommendation/NCF.
 
@@ -29,9 +31,9 @@ choice follows the source (paths relative to NCF/ at 667536cc):
   is followed by 4 negatives with random items (dataloading.py:208-236,
   --negative_samples 4), the epoch is shuffled and split into batches, the
   last partial batch dropped (dataloading.py:240-250);
-- step: logits and BCEWithLogitsLoss mean in half precision, scaled backward,
-  optimizer step, gradients dropped (ncf.py:300-321); Adam lr 0.0045, betas
-  (0.25, 0.5), eps 1e-8
+- step: logits, BCEWithLogitsLoss mean, backward through apex
+  amp.scale_loss, optimizer step, gradients dropped (ncf.py:300-321); Adam lr
+  0.0045, betas (0.25, 0.5), eps 1e-8
   (ncf.py:75-87, 248-249);
 - validation after every epoch: each test user's positive and 100 negatives
   scored in batches of 2**20, hit rate in the top 10 (ncf.py:126-173, 332;
@@ -40,7 +42,6 @@ choice follows the source (paths relative to NCF/ at 667536cc):
   (ncf.py:81, 364-367).
 
 Differences from the source, none of which changes the measured work:
-torch.cuda.amp autocast with a GradScaler instead of apex amp O2;
 torch.optim.Adam instead of apex FusedAdam; the loss is called directly
 instead of through torch.jit.trace; the test negatives are random items, not
 filtered against the user's rated items (convert.py's sampler filters them —
@@ -60,6 +61,7 @@ def train_ncf_ml20m(batch_size: int = 4_278_184, epochs: int = 2):
     import pandas as pd
     import torch
     import torch.nn as nn
+    from apex import amp
 
     url = "https://files.grouplens.org/datasets/movielens/ml-20m.zip"
     archive, csv_path = "data/ml-20m.zip", "data/ml-20m/ratings.csv"
@@ -108,7 +110,8 @@ def train_ncf_ml20m(batch_size: int = 4_278_184, epochs: int = 2):
     model = NeuMF().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0045, betas=(0.25, 0.5), eps=1e-8)
     criterion = nn.BCEWithLogitsLoss()
-    scaler = torch.cuda.amp.GradScaler()
+    model, optimizer = amp.initialize(model, optimizer, opt_level="O2",
+                                      keep_batchnorm_fp32=False, loss_scale="dynamic")
 
     throughputs, hr = [], 0.0
     for epoch in range(epochs):
@@ -120,18 +123,17 @@ def train_ncf_ml20m(batch_size: int = 4_278_184, epochs: int = 2):
                             torch.zeros(len(train_items) * negative_samples, device=device)))
         order = torch.randperm(len(users), device=device)
         for idx in order.split(batch_size)[:-1]:
-            with torch.cuda.amp.autocast():
-                loss = criterion(model(users[idx], items[idx]).view(-1), labels[idx])
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
+            loss = criterion(model(users[idx], items[idx]).view(-1), labels[idx]).float()
+            with amp.scale_loss(loss, optimizer) as scaled_loss:
+                scaled_loss.backward()
+            optimizer.step()
             optimizer.zero_grad(set_to_none=True)
         torch.cuda.synchronize()
         throughputs.append(len(users) / (time.time() - begin))
         del users, items, labels, order
 
         model.eval()
-        with torch.no_grad(), torch.cuda.amp.autocast():
+        with torch.no_grad():
             scores = torch.cat([model(u, i) for u, i in zip(test_users.split(2 ** 20), test_items.split(2 ** 20))])
             top = torch.topk(scores.view(-1, valid_negative + 1), 10)[1]
             hr = (top == 0).any(dim=1).float().mean().item()

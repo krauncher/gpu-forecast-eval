@@ -12,13 +12,13 @@
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-10: a recommender (embeddings + MLP) fits no leaf workload, so `training`; precision fp16 (the benchmark's 24 GB FP16 set passes --amp: apex amp O2; the task uses autocast); params = (138 493 users + 26 744 items) x (64 + 128) embedding weights + MLP and final layers = 31.83 M; dataset_samples = MovieLens-20M ratings minus one test rating per user (20 000 263 - 138 493), each epoch adds 4 negatives per positive"
+    "classification": "labelled from the task code, 2026-10-10: a recommender (embeddings + MLP) fits no leaf workload, so `training`; precision fp16 (apex amp O2, as the rows' logs record: amp True); params = (138 493 users + 26 744 items) x (64 + 128) embedding weights + MLP and final layers = 31.83 M; dataset_samples = MovieLens-20M ratings minus one test rating per user (20 000 263 - 138 493), each epoch adds 4 negatives per positive"
   },
   "measurements": [
     {
       "id": "lambda-dlb-v1-fp16",
       "independent": true,
-      "source": "Lambda, github.com/lambdal/deeplearning-benchmark, commit aa5addb6 (2025-12-17), pytorch/pytorch-train-throughput-fp16.csv, column ncf (training throughput, samples/s), single-GPU rows run with batch 4 278 184 (pytorch/pytorch-train-bs-fp16.csv; config_pytorch_24GB.sh, no ncf batch fix in the GPU configs): 'RTX 4090' 32192491; 'RTX 3090' 25118176; 'LambdaCloud A10' 15343208",
+      "source": "Lambda, github.com/lambdal/deeplearning-benchmark, commit aa5addb6 (2025-12-17), pytorch/pytorch-train-throughput-fp16.csv, column ncf (training throughput, samples/s), single-GPU rows run with batch 4 278 184 (pytorch/pytorch-train-bs-fp16.csv; config_pytorch_24GB.sh, no ncf batch fix in the GPU configs): 'RTX 4090' 32192491; 'RTX 3090' 25118176; 'LambdaCloud A10' 15343208; the logs of these rows (pytorch/results/4090_v1, 3090_v1, LambdaCloud_A10_v1 / PyTorch_ncf_FP16) record amp True, opt_level O2, batch_size 4278184",
       "date": "measurement dates are not in the CSV; repository snapshot 2025-12-17",
       "hardware": "Lambda's systems as named in the rows; NVIDIA NGC PyTorch container (version not recorded per row), LambdaLabsML/DeepLearningExamples branch lambda/benchmark",
       "vram_gb_at_most": 24,

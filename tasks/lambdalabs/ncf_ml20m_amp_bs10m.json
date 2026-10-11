@@ -1,0 +1,37 @@
+{
+  "task": "lambdalabs/ncf_ml20m_amp_bs10m",
+  "fields": {
+    "workload_type": "training",
+    "mode": "training",
+    "framework": "pytorch",
+    "precision": "fp16",
+    "params_billions": 0.0318,
+    "batch_size": 10000000,
+    "epochs": 2,
+    "dataset_samples": 19861770,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-10-11: a recommender (embeddings + MLP) fits no leaf workload, so `training`; precision fp16 (apex amp O2, as the rows' logs record: amp True); params = (138 493 users + 26 744 items) x (64 + 128) embedding weights + MLP and final layers = 31.83 M; dataset_samples = MovieLens-20M ratings minus one test rating per user (20 000 263 - 138 493), each epoch adds 4 negatives per positive"
+  },
+  "measurements": [
+    {
+      "id": "lambda-dlb-v1-fp16",
+      "independent": true,
+      "source": "Lambda, github.com/lambdal/deeplearning-benchmark, commit aa5addb6 (2025-12-17), pytorch/pytorch-train-throughput-fp16.csv, column ncf (training throughput, samples/s), single-GPU rows of 48 GB cards, run with batch 10 000 000 under apex amp O2 (pytorch/pytorch-train-bs-fp16.csv; config_pytorch_48GB.sh, no ncf batch fix in the GPU configs): 'RTX 6000 Ada' 33148978; 'RTX A6000' 25357954; 'Quadro RTX 8000' 19801310; the logs of these rows (pytorch/results/AdaA6000_v1, A6000_v1, QuadroRTX8000_v1 / PyTorch_ncf_FP16) record amp True, opt_level O2. The 80 GB cards ran the same batch in fp32 and are a separate task, lambdalabs/ncf_ml20m_bs10m",
+      "date": "measurement dates are not in the CSV; repository snapshot 2025-12-17",
+      "hardware": "Lambda's systems as named in the rows; NVIDIA NGC PyTorch container (version not recorded per row), LambdaLabsML/DeepLearningExamples branch lambda/benchmark",
+      "vram_gb_at_most": 48,
+      "vram_gb_at_most_note": "the run completed with batch 10 000 000 on 48 GB cards (RTX 6000 Ada, RTX A6000, Quadro RTX 8000), so the peak is at most 48 GB",
+      "anchor_gpu": "rtx_6000_ada",
+      "anchor_compute_sec": 5.4,
+      "anchor_compute_sec_note": "training work / published throughput of 'RTX 6000 Ada': 2 epochs x 9 batches (99 308 850 samples per epoch: 19 861 770 positives  4 negatives each; last partial batch dropped) x batch 10000000 = 180 000 000 samples; / 33 148 978 samples/s. The benchmark's throughput covers the training steps: start-up, data download and validation are outside it",
+      "compute_ratio": {
+        "rtx_6000_ada": 1.0,
+        "rtx_a6000": 1.307,
+        "qrtx_8000": 1.674
+      },
+      "compute_ratio_note": "throughput[RTX 6000 Ada] / throughput[GPU]; one row per GPU"
+    }
+  ]
+}
