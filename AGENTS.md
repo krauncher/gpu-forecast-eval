@@ -1,4 +1,4 @@
-# krauncher_test — reference for coding agents
+# gpu-forecast-eval — reference for coding agents
 
 **This stand measures the quality of Krauncher's forecast. It does not execute
 code.** Tasks are never submitted to a GPU, and the stand is not a way to run
@@ -25,8 +25,8 @@ Client API reference: https://github.com/krauncher/krauncher/blob/main/AGENTS.md
 ## Deploy
 
 ```bash
-git clone https://github.com/krauncher/krauncher_test.git
-cd krauncher_test
+git clone https://github.com/krauncher/gpu-forecast-eval.git
+cd gpu-forecast-eval
 ./setup.sh                 # clones the krauncher client into client/, installs it into .venv
 cp .env.example .env       # then set KRAUNCHER_API_KEY=cas_...
 ```
