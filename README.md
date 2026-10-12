@@ -1,4 +1,4 @@
-# krauncher_test
+# gpu-forecast-eval
 
 Test stand for independent validation of krauncher forecasts. For each task
 it records, before anything runs, the analyzer's assay v1 (the passport: the
@@ -18,8 +18,8 @@ code and call arguments, no data is downloaded and no GPU time is spent.
 
 ### 2. Download
 
-    git clone https://github.com/krauncher/krauncher_test.git
-    cd krauncher_test
+    git clone https://github.com/krauncher/gpu-forecast-eval.git
+    cd gpu-forecast-eval
     ./setup.sh
 
 `setup.sh` clones the current krauncher client from git into `client/` and
