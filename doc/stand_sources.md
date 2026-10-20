@@ -29,12 +29,25 @@ Licence roles:
 | `rosinality__stylegan2-pytorch` | github.com/rosinality/stylegan2-pytorch | `bef283a` | 2021-11-24 | MIT + NVIDIA Source Code License (see exceptions) | yes | **no** |
 | `NVlabs__stylegan2-ada-pytorch` | github.com/NVlabs/stylegan2-ada-pytorch | `d72cc7d` | 2023-09-22 | NVIDIA Source Code License (non-commercial: research or evaluation only) | yes | **no** |
 | `NVlabs__stylegan3` | github.com/NVlabs/stylegan3 | `c233a91` | 2023-04-26 | NVIDIA Source Code License (non-commercial: research or evaluation only) | yes | **no** |
+| `mlcommons__inference_results_v5.1` (`summary_results.json` only) | github.com/mlcommons/inference_results_v5.1 | `5ea4f62` | 2026-01-16 | Apache-2.0 | yes | per file header |
+| `Stability-AI__generative-models` (`scripts/`, `sgm/`, `configs/`) | github.com/Stability-AI/generative-models | `e8cd657` | 2025-12-16 | MIT (SDXL weights: CreativeML Open RAIL++-M) | yes | yes |
+| `facebookresearch__detectron2` (`demo/`, `tools/`, `configs/`) | github.com/facebookresearch/detectron2 | `1e3e13b` | 2026-09-29 | Apache-2.0 | yes | yes |
+| `open-mmlab__mmdetection` (`demo/`, `tools/`, RetinaNet / YOLOX configs) | github.com/open-mmlab/mmdetection | `cfd5d3a` | 2024-02-05 | Apache-2.0 | yes | yes |
+| `MIC-DKFZ__nnUNet` (`nnunetv2/inference/`) | github.com/MIC-DKFZ/nnUNet | `bbf1222` | 2026-10-16 | Apache-2.0 | yes | yes |
+| `Project-MONAI__tutorials` (`3d_segmentation/`) | github.com/Project-MONAI/tutorials | `f33710c` | 2026-10-15 | Apache-2.0 | yes | yes |
+| `vllm-project__vllm` (`benchmarks/`, `examples/basic/offline_inference/`) | github.com/vllm-project/vllm | `e4a676c` | 2026-10-20 | Apache-2.0 | yes | yes |
+| `sgl-project__sglang` (`python/sglang/benchmark/`, `examples/runtime/engine/`, `benchmark/gsm8k/`) | github.com/sgl-project/sglang | `f8fd41c` | 2026-10-20 | Apache-2.0 | yes | yes |
 
 Notes:
 - transformers removed `examples/` from main on 2026-10-13 (`14d7637051`,
   "Remove examples"); the checkout is its parent, the last state with them.
 - `mlcommons/inference_results_v5.0` has no licence file; v6.0 (Apache-2.0)
   taken instead.
+- `inference_results_v5.1`: only the summary table, for the single-accelerator
+  results v6.0 lacks (Stable Diffusion XL, RetinaNet, 3D-UNet KiTS19).
+- Inference sources added 2026-10-20 as tree-side partners of the MLPerf
+  inference tasks. Not taken: `ultralytics/ultralytics` (AGPL-3.0, the YOLO
+  task's run-time dependency) and `Comfy-Org/ComfyUI` (GPL-3.0).
 - GAN sources added 2026-10-20 (the stand's GAN class had one family, DeepView
   dcgan). `pytorch/examples` dcgan not taken: DeepView's dcgan derives from it
   (same family).
