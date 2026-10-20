@@ -1,14 +1,14 @@
 {
   "task": "lambdalabs/ncf_ml20m_bs10m",
   "fields": {
-    "workload_type": "training",
+    "workload_type": "recsys_training",
     "mode": "training",
     "framework": "pytorch",
     "precision": "fp32",
     "params_billions": 0.0318,
     "batch_size": 10000000,
     "epochs": 2,
-    "dataset_samples": 19861770,
+    "dataset_samples": 90000000,
     "cpu_only": false
   },
   "sources": {

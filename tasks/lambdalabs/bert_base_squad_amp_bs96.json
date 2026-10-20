@@ -7,7 +7,7 @@
     "precision": "fp16",
     "params_billions": 0.109,
     "batch_size": 96,
-    "dataset_samples": 87599,
+    "dataset_samples": 9696,
     "seq_len": 384,
     "cpu_only": false
   },

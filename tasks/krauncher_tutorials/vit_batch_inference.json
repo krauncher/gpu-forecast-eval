@@ -7,7 +7,8 @@
     "precision": "fp16",
     "params_billions": 0.086,
     "batch_size": 128,
-    "cpu_only": false
+    "cpu_only": false,
+    "dataset_samples": 128
   },
   "sources": {
     "classification": "labelled from the task code, 2026-10-09; draft, self-checked against the analyzer's answer (disagreements resolved from the code)"
