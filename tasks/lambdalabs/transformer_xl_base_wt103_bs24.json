@@ -8,7 +8,8 @@
     "params_billions": 0.192,
     "batch_size": 24,
     "seq_len": 192,
-    "cpu_only": false
+    "cpu_only": false,
+    "dataset_samples": 9600
   },
   "sources": {
     "classification": "labelled from the task code, 2026-10-10: a transformer language model trained from scratch, so `ai_training`; precision fp16 (autocast and gradient scaler); params counted from the layer shapes = 191 948 759 = embedding 137 080 320 (267 735 tokens x 512, tied with the output weights) + output bias 267 735 + 16 layers x 3 412 480 + relative-position biases 1 024 (vocabulary 267 735: WikiText-103 training tokens and <eos>, not counted on the stand's machine); seq_len = target length (the memory adds 192 more positions of context); the run is bounded by max_step 400, not by epochs: epochs and dataset_samples are left out"

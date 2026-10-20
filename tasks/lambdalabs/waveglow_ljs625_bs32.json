@@ -8,7 +8,7 @@
     "params_billions": 0.268,
     "batch_size": 32,
     "epochs": 2,
-    "dataset_samples": 625,
+    "dataset_samples": 608,
     "cpu_only": false
   },
   "sources": {
