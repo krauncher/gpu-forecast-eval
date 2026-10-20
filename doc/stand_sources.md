@@ -21,12 +21,23 @@ Licence roles:
 | `huggingface__transformers` (`examples/` only) | github.com/huggingface/transformers | `cc0618a18035` | 2026-10-13 | Apache-2.0 | yes | yes |
 | `huggingface__diffusers` (`examples/` only) | github.com/huggingface/diffusers | `e04f0c5f2439` | 2026-10-19 | Apache-2.0 | yes | yes |
 | `CentML__DeepView.Predict` | github.com/CentML/DeepView.Predict (archived) | `8f8e682b0738` | 2024-12-16 | Apache-2.0 | yes | yes |
+| `eriklindernoren__PyTorch-GAN` | github.com/eriklindernoren/PyTorch-GAN | `36d3c77` | 2021-01-06 | MIT | yes | yes |
+| `junyanz__pytorch-CycleGAN-and-pix2pix` | github.com/junyanz/pytorch-CycleGAN-and-pix2pix | `2a7afba` | 2025-08-06 | BSD (CycleGAN, pix2pix, DCGAN parts) | yes | yes |
+| `NVIDIA__pix2pixHD` | github.com/NVIDIA/pix2pixHD | `14b3b3c` | 2024-09-30 | BSD | yes | yes |
+| `lucidrains__lightweight-gan` | github.com/lucidrains/lightweight-gan | `efbec45` | 2025-01-11 | MIT | yes | yes |
+| `ajbrock__BigGAN-PyTorch` | github.com/ajbrock/BigGAN-PyTorch | `9845943` | 2019-07-18 | MIT | yes | yes |
+| `rosinality__stylegan2-pytorch` | github.com/rosinality/stylegan2-pytorch | `bef283a` | 2021-11-24 | MIT + NVIDIA Source Code License (see exceptions) | yes | **no** |
+| `NVlabs__stylegan2-ada-pytorch` | github.com/NVlabs/stylegan2-ada-pytorch | `d72cc7d` | 2023-09-22 | NVIDIA Source Code License (non-commercial: research or evaluation only) | yes | **no** |
+| `NVlabs__stylegan3` | github.com/NVlabs/stylegan3 | `c233a91` | 2023-04-26 | NVIDIA Source Code License (non-commercial: research or evaluation only) | yes | **no** |
 
 Notes:
 - transformers removed `examples/` from main on 2026-10-13 (`14d7637051`,
   "Remove examples"); the checkout is its parent, the last state with them.
 - `mlcommons/inference_results_v5.0` has no licence file; v6.0 (Apache-2.0)
   taken instead.
+- GAN sources added 2026-10-20 (the stand's GAN class had one family, DeepView
+  dcgan). `pytorch/examples` dcgan not taken: DeepView's dcgan derives from it
+  (same family).
 
 ## Exceptions inside the trees
 
@@ -37,6 +48,7 @@ Notes:
 | `mlcommons__training/retired_benchmarks/gpt3/megatron-lm/` | BSD-3 + Apache-2.0 (Megatron-LM) | yes | yes |
 | `CentML__DeepView.Predict/experiments/{dcgan,inception,resnet}/` | BSD-3 | yes | yes |
 | `CentML__DeepView.Predict/experiments/{gnmt/seq2seq,transformer}/` | MIT | yes | yes |
+| `rosinality__stylegan2-pytorch/op/` and the model details of `model.py` | NVIDIA Source Code License (from NVlabs/stylegan2; `LICENSE-NVIDIA`); `lpips/` BSD, FID code Apache-2.0 | yes | **no** for the repository (training scripts import `op/`) |
 | `mlcommons__*/retired_benchmarks/**/rnnt/**/text/`, `retinanet/ssd/`, `gnmt/pytorch/`, minigo UI | MIT / BSD | yes | yes |
 
 Not covered: licences of the models and datasets the scripts load (each
