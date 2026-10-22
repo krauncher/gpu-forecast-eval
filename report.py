@@ -207,6 +207,13 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
                                 "status": "anchor" if g == anchor else
                                           ratio_status(f, e) if f is not None else "none"}
                             for g, (e, f) in full.items()}
+                # the anchor's own cell shows the time deviation on that card:
+                # compute time on the anchor, else the reference-card time
+                at = anchor_time(meas(t), rs[t]["fields"])
+                rm, rg = meas(t).get("reference_sec"), rs[t]["fields"].get("reference_sec")
+                tm = at if at else (rm, rg) if anchor == REFERENCE_GPU and rm and rg else None
+                if anchor in cells[t] and tm:
+                    cells[t][anchor].update(time_ratio=_r(tm[1] / tm[0]), time_status=time_status(tm[1], tm[0]))
                 scored = [g for g in full if g != anchor]
                 missing = [g for g in scored if full[g][1] is None]
                 if missing:
@@ -510,7 +517,12 @@ def render_html(rep: dict) -> str:
                         if x is None:
                             tds.append("<td></td>")
                         elif x["status"] == "anchor":
-                            tds.append(f'<td class="cell anchor" title="{e(g)}: anchor, 1.00 by definition">◦ anchor</td>')
+                            if x.get("time_ratio") is None:
+                                tds.append(f'<td class="cell none" title="{e(g)}: anchor, no time measured">– none</td>')
+                            else:
+                                st = x["time_status"]
+                                tip = f"{g}: anchor · time forecast / measured"
+                                tds.append(f'<td class="cell {st}" title="{e(tip)}">{_ICON[st]} {x["time_ratio"]:.2f}</td>')
                         elif x["forecast"] is None:
                             tip = f"{g}: measured {x['measured']} · no forecast"
                             tds.append(f'<td class="cell none" title="{e(tip)}">– none</td>')
@@ -521,12 +533,15 @@ def render_html(rep: dict) -> str:
                     anchor = ld["anchors"].get(t)
                     label = e(t) + (f' <span class="muted">vs {e(anchor)}</span>' if anchor else "")
                     body += f"<tr><td>{label}</td>{''.join(tds)}</tr>"
-                head = "".join(f"<th>{e(g)}</th>" for g in gpus)
+                anchor_gpus = {ld["anchors"].get(t) or REFERENCE_GPU for t in ld["cells"]}
+                head = "".join(f"<th>{e(g)}{'<br>◦ anchor' if g in anchor_gpus else ''}</th>" for g in gpus)
                 P.append('<p class="note">Ladder per GPU: forecast / measured compute_ratio (1.00 = exact; hover for both '
                          'values). An empty cell is a GPU not measured for that task; "vs" names the anchor GPU a '
-                         'published measurement is relative to.</p>')
+                         'published measurement is relative to. In the anchor\'s own cell (column marked ◦ anchor): '
+                         'forecast / measured time on that card (compute time on the anchor, else the reference-card '
+                         'time); it does not enter the ladder errors.</p>')
                 P.append(f'<div class="panel"><table><thead><tr><th>task</th>{head}</tr></thead><tbody>{body}</tbody></table></div>')
-                P.append('<div class="legend">' + " ".join(_st(k) for k in ("good", "warning", "critical", "none", "anchor")) + "</div>")
+                P.append('<div class="legend">' + " ".join(_st(k) for k in ("good", "warning", "critical", "none")) + "</div>")
                 if ld["uncovered"]:
                     P.append('<p class="note">' + _st("critical", "no forecast")
                              + " measured GPUs the service listed no row for (e.g. filtered out by its VRAM requirement): "
