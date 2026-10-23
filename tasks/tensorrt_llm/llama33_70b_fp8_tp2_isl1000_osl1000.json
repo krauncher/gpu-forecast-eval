@@ -1,0 +1,35 @@
+{
+  "task": "tensorrt_llm/llama33_70b_fp8_tp2_isl1000_osl1000",
+  "fields": {
+    "workload_type": "llm_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "precision": "fp8",
+    "params_billions": 70.0,
+    "batch_size": 3000,
+    "seq_len": 2000,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-10-23 (batch_size: all requests submitted at once; seq_len: ISL + OSL)"
+  },
+  "measurements": [
+    {
+      "id": "trtllm-perf-overview-v0.21",
+      "independent": true,
+      "source": "NVIDIA, github.com/NVIDIA/TensorRT-LLM, commit 0c9430e (2025-09-15), docs/source/performance/perf-overview.md, table 'Llama 3.3 70B FP8', ISL 1000 / OSL 1000, TP 2, 'Total Output Throughput (tokens/sec)': H100 4,181.06; H200 4,773.33",
+      "date": "page generated from commit 0c9430e, 2025-09-15; v0.21 benchmarks",
+      "hardware": "H100 SXM 80GB (DGX H100), H200 SXM 141GB (DGX H200), 2 GPUs each (TP 2); TensorRT-LLM v0.21, PyTorch backend; host software versions not stated",
+      "anchor_gpu": "h100_sxm",
+      "anchor_compute_sec": 717.5,
+      "anchor_compute_sec_note": "output work / published throughput on H100: 3000 requests x 1000 output tokens = 3,000,000 tokens / 4,181.06 tokens/s; external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23); on 2 GPUs",
+      "compute_ratio": {
+        "h100_sxm": 1.0,
+        "h200": 0.876
+      },
+      "compute_ratio_note": "throughput[H100] / throughput[GPU], same ISL/OSL and TP",
+      "vram_gb_at_most": 80,
+      "vram_gb_at_most_note": "the run completed on H100 SXM 80GB (TP 2); the KV cache takes 90 % of the memory left after the model, so the peak is not the model's need"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "task": "cogvideo/cogvideox_5b_t2v",
+  "fields": {
+    "workload_type": "diffusion_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "precision": "bf16",
+    "params_billions": 5,
+    "batch_size": 1,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-10-23 (params_billions: the CogVideoX-5B transformer; the T5 text encoder not counted)"
+  },
+  "measurements": [
+    {
+      "id": "cogvideo-readme",
+      "independent": true,
+      "source": "THUDM, github.com/THUDM/CogVideo, commit 7a1af71 (2025-11-04), README.md model table, 'Inference Speed (Step = 50, FP/BF16)', CogVideoX-5B: 'Single A100: ~180 seconds', 'Single H100: ~90 seconds'; tested with diffusers and its memory optimisations (README.md:275-298)",
+      "date": "not stated; table in the repository at 7a1af71 (CogVideoX-5B released 2024-08-27)",
+      "hardware": "'Single A100', 'Single H100'; memory size, form factor, host and software versions not stated",
+      "anchor_gpu": "a100_sxm_80",
+      "anchor_compute_sec": 180,
+      "anchor_compute_sec_note": "published time on A100 ('~180 s', rounded), taken as the compute time: external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23)",
+      "compute_ratio": {
+        "a100_sxm_80": 1.0,
+        "h100_sxm": 0.5
+      },
+      "compute_ratio_note": "time[H100] / time[A100] = ~90 / ~180; both values rounded in the source. 'A100' and 'H100' taken as the 80 GB SXM cards (not stated)",
+      "vram_gb_at_most": 80,
+      "vram_gb_at_most_note": "the run completed on single A100 and H100; the README gives 'diffusers BF16: 5GB minimum' with these optimisations, not the peak of this run, so only an upper bound is stated"
+    }
+  ]
+}
