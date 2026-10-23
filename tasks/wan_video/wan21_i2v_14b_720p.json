@@ -1,0 +1,34 @@
+{
+  "task": "wan_video/wan21_i2v_14b_720p",
+  "fields": {
+    "workload_type": "diffusion_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "precision": "bf16",
+    "params_billions": 14,
+    "batch_size": 1,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-10-23 (params_billions: the DiT of Wan2.1 I2V-14B; text and image encoders not counted)"
+  },
+  "measurements": [
+    {
+      "id": "wan21-readme-comp-effic",
+      "independent": true,
+      "source": "Wan team, github.com/Wan-Video/Wan2.1, commit 9737cba (2026-03-05), README.md 'Computational Efficiency on Different GPUs', assets/comp_effic.png, 'Total time (s) / peak GPU memory (GB)', I2V-14B 720P, 1 GPU: H800/H100 1491.6 / 76.7; A800/A100 2715.5 / 76.7; H20 5494.8 / 76.7",
+      "date": "not stated; table in the repository at 9737cba",
+      "hardware": "GPUs named as 'H800/H100', 'A800/A100', 'H20'; form factor, host and software versions not stated; settings: --offload_model True, no prompt extension",
+      "anchor_gpu": "a100_sxm_80",
+      "anchor_compute_sec": 2715.5,
+      "anchor_compute_sec_note": "time on A800/A100; published time taken as the compute time: external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23)",
+      "compute_ratio": {
+        "a100_sxm_80": 1.0,
+        "h100_sxm": 0.549
+      },
+      "compute_ratio_note": "time[H800/H100] / time[A800/A100] = 1491.6 / 2715.5. 'A800/A100' and 'H800/H100' taken as the 80 GB SXM cards (not stated). H20 (5494.8 s) not in the ratios: not among the analyzer's GPUs",
+      "min_vram_gb": 76.7,
+      "min_vram_gb_note": "published peak GPU memory, 'GB' as in the table (GB or GiB not stated), with --offload_model True"
+    }
+  ]
+}

@@ -73,3 +73,30 @@ These are checked per task when a task is built.
 - Cineca users' workloads — need an agreement (via Laura).
 - Hugging Face Hub model configs — per-model licences; the registry sync
   (`cas-analyzer/tools/hf_registry_sync.py`) already reads them.
+
+## Candidates with published measurements: llm_inference and diffusion_inference (2026-10-23)
+
+Pilot directions of the Laura project. Not downloaded yet; each becomes a task
+under `tasks/` after its script is reduced and checked. What the stand compares:
+our forecast on the cards the source measured, through `anchor_gpu` and
+`compute_ratio`; the reference card need not be among them. Serving under a
+request stream is out of the stand's scope.
+
+| Candidate | Source | Published measurements | GPUs | Licence (to check per task) |
+|---|---|---|---|---|
+| Wan2.1 T2V-14B, 720p, 50 steps | github.com/Wan-Video/Wan2.1, README, `assets/comp_effic.png` | Total time (s) / peak memory (GB), 1/2/4/8 GPUs. 1 GPU: H800/H100 1837.9 / 69.1, A800/A100 3342.6 / 69.1, H20 6935.5 / 69.1 | H100, A100, H20 | Wan2.1 repo and weights — check |
+| Wan2.1 I2V-14B, 720p, 40 steps | same table | 1 GPU: H800/H100 1491.6 / 76.7, A800/A100 2715.5 / 76.7, H20 5494.8 / 76.7 | H100, A100, H20 | same |
+| Wan2.1 T2V-1.3B, 480p | same table | RTX 4090: 1 GPU 261.4 / 8.19; 2/4/8 GPUs 188.5, 120.8, 112.3 s | RTX 4090 | same |
+| CogVideoX-5B, 720×480, 49 frames, 50 steps, BF16 | github.com/THUDM/CogVideo, README | A100 ~180 s, H100 ~90 s (rounded); single-GPU memory from 5 GB with diffusers optimisations | A100, H100 | code Apache-2.0; CogVideoX-5B weights licence — check |
+| Llama 3.1 8B Instruct FP8, fixed ISL/OSL (e.g. 128/128, 1000/1000, 2048/2048) | TensorRT-LLM Performance Overview, nvidia.github.io/TensorRT-LLM/performance/perf-overview.html (commit 0c9430e, updated 2025-09-15) | Total output throughput (tokens/s), `trtllm-bench … throughput --backend pytorch`, v0.21, synthetic requests of one length | H100, H200, GH200, B200, GB200 | TensorRT-LLM Apache-2.0; Llama 3.1 Community Licence (gated) |
+| Llama 3.3 70B Instruct FP8, multi-GPU | same page | same | same | TensorRT-LLM Apache-2.0; Llama 3.3 Community Licence (gated) |
+
+Notes:
+- Wan2.1: "Total time" — whether it includes model loading is to be checked
+  before `anchor_compute_sec` is set; peak memory gives `min_vram_gb`.
+- TensorRT-LLM: work = number of requests × OSL tokens, so
+  `anchor_compute_sec` = work / throughput. Column alignment of the page's
+  tables to be checked against the page itself.
+- Not taken: HunyuanVideo (the README does not name the GPU of its timing
+  table); SemiAnalysis InferenceX (very large multi-node models only).
+- MLPerf SDXL: from `inference_results_v5.1` summary, already listed above.

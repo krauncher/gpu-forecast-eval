@@ -1,0 +1,33 @@
+{
+  "task": "wan_video/wan21_t2v_1_3b_480p",
+  "fields": {
+    "workload_type": "diffusion_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "precision": "bf16",
+    "params_billions": 1.3,
+    "batch_size": 1,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-10-23 (params_billions: the DiT of Wan2.1 T2V-1.3B; the text encoder runs on the CPU)"
+  },
+  "measurements": [
+    {
+      "id": "wan21-readme-comp-effic",
+      "independent": true,
+      "source": "Wan team, github.com/Wan-Video/Wan2.1, commit 9737cba (2026-03-05), README.md 'Computational Efficiency on Different GPUs', assets/comp_effic.png, 'Total time (s) / peak GPU memory (GB)', 4090 / T2V-1.3B 480P, 1 GPU: 261.4 / 8.19",
+      "date": "not stated; table in the repository at 9737cba",
+      "hardware": "RTX 4090; host and software versions not stated; settings: --offload_model True --t5_cpu, no prompt extension",
+      "anchor_gpu": "rtx_4090",
+      "anchor_compute_sec": 261.4,
+      "anchor_compute_sec_note": "time on RTX 4090; published time taken as the compute time: external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23)",
+      "compute_ratio": {
+        "rtx_4090": 1.0
+      },
+      "compute_ratio_note": "one GPU measured; no ratios between cards",
+      "min_vram_gb": 8.19,
+      "min_vram_gb_note": "published peak GPU memory, 'GB' as in the table (GB or GiB not stated), with --offload_model True --t5_cpu"
+    }
+  ]
+}
