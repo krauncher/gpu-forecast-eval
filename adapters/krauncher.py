@@ -36,6 +36,8 @@ def stand_fields(assay: dict, ladder: dict) -> dict:
         "batch_size": knobs["batch_size"],
         "epochs": knobs["epochs"],
         "dataset_samples": knobs["dataset_samples"],
+        # batch passes of the run (training steps, forward / generate calls)
+        "steps": (assay["work"] or {}).get("steps"),
         "seq_len": knobs["seq_len"],
         "cpu_only": assay["requirements"]["cpu_only"],
         "min_vram_gb": assay["requirements"]["min_vram_gb"],
@@ -54,7 +56,7 @@ class KrauncherAdapter(ServiceInterface):
 
     def capabilities(self) -> set[str]:
         return {"workload_type", "mode", "framework", "precision", "model_name",
-                "params_billions", "batch_size", "epochs", "dataset_samples", "seq_len",
+                "params_billions", "batch_size", "epochs", "steps", "dataset_samples", "seq_len",
                 "cpu_only", "min_vram_gb", "reference_sec", "compute_sec", "spread_factor", "compute_ratio"}
 
     async def forecast(self, task: Task) -> Forecast:

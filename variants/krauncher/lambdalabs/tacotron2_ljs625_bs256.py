@@ -8,10 +8,17 @@ licence headers kept) and the run — indented into one self-contained
 function. Differences from the neutral form: the LJSpeech-1.1 archive and the
 two file lists come through a registered data source (/data) instead of a
 download; the DataLoader workers are forked (the dataset class is local to
-the function and cannot be pickled). FUNC is the task, OPTIONS the arguments
-of its @client.task decorator, KWARGS the arguments of the call.
-tools/build_dle_tacotron2.py rebuilds this file from a checkout of the source.
+the function and cannot be pickled); the training file list is named by the
+`train_list` argument, a krauncher DataManifest counted from the copy of the
+list in data/dle_tacotron2_filelists/ — it carries the size of the training
+set to the analyzer, which sees the code, not the list. FUNC is the task,
+OPTIONS the arguments of its @client.task decorator, KWARGS the arguments of
+the call. tools/build_dle_tacotron2.py rebuilds this file from a checkout of the source.
 """
+
+from pathlib import Path
+
+from krauncher import DataManifest
 
 OPTIONS = dict(
     timeout=3600,
@@ -30,10 +37,15 @@ DATA_SOURCES = [
     ], size_gb=2.6),
 ]
 
-KWARGS = dict(batch_size=256, epochs=3)
+# The training file list the task reads, counted here: the same file as the
+# data source's copy (BSD 3-Clause, NVIDIA; data/dle_tacotron2_filelists/README.md).
+TRAIN_LIST = DataManifest.from_file(
+    Path(__file__).resolve().parents[3] / "data" / "dle_tacotron2_filelists" / "ljs_audio_text_train_subset_625_filelist.txt")
+
+KWARGS = dict(train_list=TRAIN_LIST, batch_size=256, epochs=3)
 
 
-def train_tacotron2(batch_size: int = 256, epochs: int = 3):
+def train_tacotron2(train_list: dict, batch_size: int = 256, epochs: int = 3):
     import argparse
     import os
     import re
@@ -1583,7 +1595,8 @@ def train_tacotron2(batch_size: int = 256, epochs: int = 3):
     import tarfile
 
     root = "/data"
-    lists = {name: os.path.join(root, name) for name in ("ljs_audio_text_train_subset_625_filelist.txt", "ljs_audio_text_val_filelist.txt")}
+    lists = {"ljs_audio_text_train_subset_625_filelist.txt": os.path.join(root, train_list["name"]),
+             "ljs_audio_text_val_filelist.txt": os.path.join(root, "ljs_audio_text_val_filelist.txt")}
     if not os.path.isdir(os.path.join(root, "LJSpeech-1.1")):
         with tarfile.open(os.path.join(root, "LJSpeech-1.1.tar.bz2")) as t:
             t.extractall(root)

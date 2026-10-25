@@ -11,6 +11,20 @@ REFERENCE_GPU = "rtx_6000_blackwell"
 MEASURED = ("reference_sec", "min_vram_gb", "compute_ratio", "anchor_compute_sec")
 
 
+FIELD_NEAR = 0.10                              # a numeric field off by less than 10 %: warning
+
+
+def field_status(field: str, want, got) -> str:
+    """good when it matches; warning when a numeric value is off by less than
+    FIELD_NEAR of the expected one; critical otherwise. Only good counts as a match."""
+    if matches(field, want, got):
+        return "good"
+    num = all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in (want, got))
+    if num and want and abs(got - want) < FIELD_NEAR * abs(want):
+        return "warning"
+    return "critical"
+
+
 def matches(field: str, want, got) -> bool:
     """Pass / fail of a classification / assay field."""
     if field == "params_billions":
