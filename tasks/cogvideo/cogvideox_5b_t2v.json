@@ -4,13 +4,14 @@
     "workload_type": "diffusion_inference",
     "mode": "inference",
     "framework": "pytorch",
+    "inference_engine": "diffusers",
     "precision": "bf16",
     "params_billions": 5,
     "batch_size": 1,
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-23 (params_billions: the CogVideoX-5B transformer; the T5 text encoder not counted)"
+    "classification": "labelled from the task code, 2026-10-23 (params_billions: the CogVideoX-5B transformer; the T5 text encoder not counted); inference_engine diffusers: the model runs through diffusers' CogVideoXPipeline"
   },
   "measurements": [
     {

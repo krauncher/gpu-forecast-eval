@@ -4,6 +4,7 @@
     "workload_type": "cv_training",
     "mode": "training",
     "framework": "pytorch",
+    "inference_engine": null,
     "precision": "fp16",
     "params_billions": 0.0256,
     "batch_size": 1280,

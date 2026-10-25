@@ -30,6 +30,7 @@ def stand_fields(assay: dict, ladder: dict) -> dict:
         "workload_type": wl["type"],
         "mode": wl["mode"],
         "framework": wl["framework"],
+        "inference_engine": wl["runtime"]["inference_engine"],
         "precision": model["precision"],
         "model_name": model["name"],
         "params_billions": model["params_billions"],
@@ -55,7 +56,7 @@ class KrauncherAdapter(ServiceInterface):
     name = "krauncher"
 
     def capabilities(self) -> set[str]:
-        return {"workload_type", "mode", "framework", "precision", "model_name",
+        return {"workload_type", "mode", "framework", "inference_engine", "precision", "model_name",
                 "params_billions", "batch_size", "epochs", "steps", "dataset_samples", "seq_len",
                 "cpu_only", "min_vram_gb", "reference_sec", "compute_sec", "spread_factor", "compute_ratio"}
 
