@@ -7,12 +7,13 @@
     "precision": "fp16",
     "params_billions": 0.334,
     "batch_size": 28,
-    "dataset_samples": 2828,
+    "steps": 101,
+    "dataset_samples": 88492,
     "seq_len": 384,
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-09; dataset_samples = SQuAD v1.1 train examples (87 599; split into more 384-token features)"
+    "classification": "labelled from the task code, 2026-10-09; dataset_samples = the 384-token features the loop iterates, 88 492 from the 87 599 SQuAD v1.1 train examples (doc/reference_values.md)"
   },
   "measurements": [
     {

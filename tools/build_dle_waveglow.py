@@ -151,10 +151,17 @@ licence headers kept) and the run — indented into one self-contained
 function. Differences from the neutral form: the LJSpeech-1.1 archive and the
 two file lists come through a registered data source (/data) instead of a
 download; the DataLoader workers are forked (the dataset class is local to
-the function and cannot be pickled). FUNC is the task, OPTIONS the arguments
-of its @client.task decorator, KWARGS the arguments of the call.
-tools/@BUILDER@ rebuilds this file from a checkout of the source.
+the function and cannot be pickled); the training file list is named by the
+`train_list` argument, a krauncher DataManifest counted from the copy of the
+list in data/dle_tacotron2_filelists/ — it carries the size of the training
+set to the analyzer, which sees the code, not the list. FUNC is the task,
+OPTIONS the arguments of its @client.task decorator, KWARGS the arguments of
+the call. tools/@BUILDER@ rebuilds this file from a checkout of the source.
 """
+
+from pathlib import Path
+
+from krauncher import DataManifest
 
 OPTIONS = dict(
     timeout=3600,
@@ -173,7 +180,12 @@ DATA_SOURCES = [
     ], size_gb=2.6),
 ]
 
-KWARGS = dict(@KWARGS@)
+# The training file list the task reads, counted here: the same file as the
+# data source's copy (BSD 3-Clause, NVIDIA; data/dle_tacotron2_filelists/README.md).
+TRAIN_LIST = DataManifest.from_file(
+    Path(__file__).resolve().parents[3] / "data" / "dle_tacotron2_filelists" / "@TRAIN_LIST@")
+
+KWARGS = dict(train_list=TRAIN_LIST, @KWARGS@)
 '''
 
 DATA_NEUTRAL = '''\
@@ -200,7 +212,8 @@ DATA_KRAUNCHER = '''\
     import tarfile
 
     root = "/data"
-    lists = {name: os.path.join(root, name) for name in ("@TRAIN_LIST@", "@VAL_LIST@")}
+    lists = {"@TRAIN_LIST@": os.path.join(root, train_list["name"]),
+             "@VAL_LIST@": os.path.join(root, "@VAL_LIST@")}
     if not os.path.isdir(os.path.join(root, "LJSpeech-1.1")):
         with tarfile.open(os.path.join(root, "LJSpeech-1.1.tar.bz2")) as t:
             t.extractall(root)
@@ -356,7 +369,9 @@ def compose(name: str, func: str, params: dict, code: str, imports: str, doc: st
                + f"\nKWARGS = {kwargs}\n\n\n"
                + code + "\n\n" + sig + fill(DATA_NEUTRAL, **kw) + "\n" + fill(body, **kw)
                + f'\n\nif __name__ == "__main__":\n    print({func}(**KWARGS))\n')
-    variant = (fill(VARIANT_DOC, **kw) + "\n\n" + sig
+    # the variant takes the training file list as a DataManifest argument
+    vsig = f"def {func}(train_list: dict, " + sig[len(f"def {func}("):]
+    variant = (fill(VARIANT_DOC, **kw) + "\n\n" + vsig
                + textwrap.indent(imports + "\n" + code, "    ", lambda line: bool(line.strip()))
                + "\n" + fill(DATA_KRAUNCHER, **kw) + "\n" + fill(body, **kw)
                + f"\n\nFUNC = {func}\n")

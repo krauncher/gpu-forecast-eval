@@ -8,8 +8,8 @@
     "params_billions": 0.0256,
     "batch_size": 1280,
     "epochs": 2,
-    "cpu_only": false,
-    "dataset_samples": 128000
+    "steps": 200,
+    "cpu_only": false
   },
   "sources": {
     "classification": "labelled from the task code, 2026-10-09 (synthetic data: dataset_samples not stated)"

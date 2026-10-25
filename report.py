@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import scoring
-from scoring import (MEASURED, REFERENCE_GPU, TIME_GOOD, anchor_time, ladder_pairs, matches, ratio_status,
+from scoring import (MEASURED, REFERENCE_GPU, TIME_GOOD, anchor_time, field_status, ladder_pairs, ratio_status,
                      time_status, vram_status)
 
 ROOT = Path(__file__).parent
@@ -77,7 +77,10 @@ def _spearman(a: list[float], b: list[float]) -> float:
 
 
 def _r(x, nd=3):
-    return None if x is None else round(x, nd)
+    if x is None:
+        return None
+    # a non-zero value that would round to 0 keeps 3 significant digits
+    return round(x, nd) if round(x, nd) or not x else float(f"{x:.3g}")
 
 
 def _typ(ratios):
@@ -94,6 +97,7 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
             "time_good": scoring.TIME_GOOD, "time_warning": scoring.TIME_WARN,
             "ratio_good": scoring.RATIO_GOOD, "ratio_warning": scoring.RATIO_WARN,
             "vram_over_warning": scoring.VRAM_OVER_WARN, "params_tolerance": scoring.PARAMS_TOL,
+            "field_near": scoring.FIELD_NEAR,
         },
         "services": [],
     }
@@ -120,14 +124,13 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
             for f, w in exp.items():
                 if f in MEASURED or f not in got:
                     continue
-                ok = matches(f, w, got[f])
                 fields.setdefault(f, {"tasks": {}})["tasks"][t] = {
-                    "expected": w, "forecast": got[f], "status": "good" if ok else "critical"}
+                    "expected": w, "forecast": got[f], "status": field_status(f, w, got[f])}
         for v in fields.values():
             v["match"] = sum(1 for x in v["tasks"].values() if x["status"] == "good")
             v["total"] = len(v["tasks"])
         order = ("workload_type", "mode", "framework", "precision", "params_billions", "batch_size",
-                 "epochs", "dataset_samples", "seq_len", "cpu_only")
+                 "epochs", "steps", "dataset_samples", "seq_len", "cpu_only")
         svc["fields"] = {f: fields[f] for f in sorted(fields, key=lambda f: (order.index(f) if f in order else len(order), f))}
 
         # 2-4. per measurement set
@@ -392,7 +395,8 @@ def render_html(rep: dict) -> str:
          f'<p class="sub">Generated {e(rep["created_utc"])}. Each value is marked '
          f'{_st("good")} time within x{th["time_good"]}, ladder ratio within '
          f'x{th["ratio_good"]}, VRAM up to x{th["vram_over_warning"]} above the measured peak · '
-         f'{_st("warning")} time within x{th["time_warning"]}, ratio within x{th["ratio_warning"]}, VRAM over-provisioned · '
+         f'{_st("warning")} time within x{th["time_warning"]}, ratio within x{th["ratio_warning"]}, VRAM over-provisioned, '
+         f'a numeric field off by less than {th["field_near"]:.0%} · '
          f'{_st("critical")} beyond that, VRAM below the peak (OOM risk) or above a measured bound, '
          f'a field that differs, a slower GPU picked as the fastest.</p>']
     for s in rep["services"]:

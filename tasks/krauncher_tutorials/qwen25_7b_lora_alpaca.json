@@ -8,6 +8,7 @@
     "params_billions": 7.62,
     "batch_size": 4,
     "epochs": 3,
+    "steps": 2250,
     "dataset_samples": 3000,
     "seq_len": 512,
     "cpu_only": false

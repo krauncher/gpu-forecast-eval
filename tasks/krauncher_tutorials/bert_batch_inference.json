@@ -7,9 +7,9 @@
     "precision": "fp32",
     "params_billions": 0.11,
     "batch_size": 64,
+    "steps": 1,
     "seq_len": 128,
-    "cpu_only": false,
-    "dataset_samples": 64
+    "cpu_only": false
   },
   "sources": {
     "classification": "labelled from the task code, 2026-10-09; draft, self-checked against the analyzer's answer (disagreements resolved from the code)"

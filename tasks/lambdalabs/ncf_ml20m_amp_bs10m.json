@@ -8,11 +8,12 @@
     "params_billions": 0.0318,
     "batch_size": 10000000,
     "epochs": 2,
-    "dataset_samples": 90000000,
+    "steps": 18,
+    "dataset_samples": 99308850,
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-11; workload revised 2026-10-22: NeuMF (two user / item table pairs, the GMF branch multiplies one, the MLP branch concatenates the other), the NCF leaf `ncf_training` under `recsys_training`; precision fp16 (apex amp O2, as the rows' logs record: amp True); params = (138 493 users + 26 744 items) x (64 + 128) embedding weights + MLP and final layers = 31.83 M; dataset_samples = MovieLens-20M ratings minus one test rating per user (20 000 263 - 138 493), each epoch adds 4 negatives per positive"
+    "classification": "labelled from the task code, 2026-10-11; workload revised 2026-10-22: NeuMF (two user / item table pairs, the GMF branch multiplies one, the MLP branch concatenates the other), the NCF leaf `ncf_training` under `recsys_training`; precision fp16 (apex amp O2, as the rows' logs record: amp True); params = (138 493 users + 26 744 items) x (64 + 128) embedding weights + MLP and final layers = 31.83 M; dataset_samples = the samples the loop iterates per epoch: MovieLens-20M ratings minus one test rating per user (20 000 263 - 138 493 = 19 861 770 positives) plus 4 negatives per positive = 99 308 850"
   },
   "measurements": [
     {
