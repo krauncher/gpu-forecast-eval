@@ -4,6 +4,7 @@
     "workload_type": "llm_inference",
     "mode": "inference",
     "framework": "pytorch",
+    "inference_engine": "tensorrt_llm",
     "precision": "fp8",
     "params_billions": 70.0,
     "batch_size": null,

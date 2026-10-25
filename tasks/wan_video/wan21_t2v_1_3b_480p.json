@@ -4,13 +4,14 @@
     "workload_type": "diffusion_inference",
     "mode": "inference",
     "framework": "pytorch",
+    "inference_engine": null,
     "precision": "bf16",
     "params_billions": 1.3,
     "batch_size": 1,
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-23 (params_billions: the DiT of Wan2.1 T2V-1.3B; the text encoder runs on the CPU; precision bf16 is set by the Wan2.1 library, not the task code: param_dtype = torch.bfloat16 (wan/configs/shared_config.py:14 at 9737cba), the DiT runs under amp.autocast(dtype=param_dtype) (text2video.py:204, image2video.py:258) with its weights fp32 as on the Hub)"
+    "classification": "labelled from the task code, 2026-10-23 (params_billions: the DiT of Wan2.1 T2V-1.3B; the text encoder runs on the CPU; precision bf16 is set by the Wan2.1 library, not the task code: param_dtype = torch.bfloat16 (wan/configs/shared_config.py:14 at 9737cba), the DiT runs under amp.autocast(dtype=param_dtype) (text2video.py:204, image2video.py:258) with its weights fp32 as on the Hub); inference_engine none: the model runs in the Wan2.1 repository's own PyTorch code, no inference library"
   },
   "measurements": [
     {

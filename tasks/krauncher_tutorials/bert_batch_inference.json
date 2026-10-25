@@ -4,6 +4,7 @@
     "workload_type": "batch_inference",
     "mode": "inference",
     "framework": "pytorch",
+    "inference_engine": "transformers",
     "precision": "fp32",
     "params_billions": 0.11,
     "batch_size": 64,

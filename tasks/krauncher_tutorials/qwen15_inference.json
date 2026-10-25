@@ -4,6 +4,7 @@
     "workload_type": "llm_inference",
     "mode": "inference",
     "framework": "pytorch",
+    "inference_engine": "transformers",
     "precision": "fp16",
     "params_billions": 1.54,
     "batch_size": 1,

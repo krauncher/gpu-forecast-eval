@@ -129,7 +129,7 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
         for v in fields.values():
             v["match"] = sum(1 for x in v["tasks"].values() if x["status"] == "good")
             v["total"] = len(v["tasks"])
-        order = ("workload_type", "mode", "framework", "precision", "params_billions", "batch_size",
+        order = ("workload_type", "mode", "framework", "inference_engine", "precision", "params_billions", "batch_size",
                  "epochs", "steps", "dataset_samples", "seq_len", "cpu_only")
         svc["fields"] = {f: fields[f] for f in sorted(fields, key=lambda f: (order.index(f) if f in order else len(order), f))}
 

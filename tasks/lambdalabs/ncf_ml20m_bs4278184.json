@@ -4,6 +4,7 @@
     "workload_type": "ncf_training",
     "mode": "training",
     "framework": "pytorch",
+    "inference_engine": null,
     "precision": "fp16",
     "params_billions": 0.0318,
     "batch_size": 4278184,

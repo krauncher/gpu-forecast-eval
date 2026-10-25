@@ -4,6 +4,7 @@
     "workload_type": "tts",
     "mode": "training",
     "framework": "pytorch",
+    "inference_engine": null,
     "precision": "fp32",
     "params_billions": 0.0282,
     "batch_size": 148,
