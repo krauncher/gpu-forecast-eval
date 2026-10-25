@@ -56,6 +56,12 @@ yet.
 | all six LJSpeech tasks | dataset_samples | 625 | lines of `ljs_audio_text_train_subset_625_filelist.txt`, read by `load_filepaths_and_text` | downloaded from the URL in the variant's `data_urls` (LambdaLabsML/DeepLearningExamples `667536cc`): 625 lines, 625 distinct paths, every line `path\|text` | source |
 | `transformer_xl_{base,large}_wt103_bs*` (6) | steps | 400 or 40 (= `max_step`) | `for epoch in itertools.count(start=1)` with `if train_step == max_step: break` (base_bs104 l. 2170-2173): exactly `max_step` steps, however many epochs that takes | — (no dataset_samples) | code |
 
+### tensorrt_llm
+
+| task | field | value | derivation | premises (source) | checked by |
+|---|---|---|---|---|---|
+| `llama31_8b_fp8_*` (3), `llama33_70b_fp8_tp2_isl1000_osl1000` | dataset_samples | 3000 | `prompts = [... for _ in range(num_requests)]`, `KWARGS` num_requests 3000, passed whole to `llm.generate(prompts, params)`; the warm-up `llm.generate(prompts[:warmup], params)` runs on a slice of the same list. `batch_size` is null: the engine forms the batch of every step from the requests in flight (continuous batching), bounded by the KV cache and max_batch_size, so it depends on the GPU, not on the code | 3000 requests for these ISL/OSL in the source's dataset table (TensorRT-LLM `perf-overview.md` at `0c9430e`, lines 215-226) | code, source |
+
 ## Open points
 
 1. BERT: `steps` is 101, while `anchor_compute_sec_note` in the same task
