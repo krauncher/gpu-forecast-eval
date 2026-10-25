@@ -6,12 +6,13 @@
     "framework": "pytorch",
     "precision": "fp8",
     "params_billions": 8.0,
-    "batch_size": 3000,
+    "batch_size": null,
+    "dataset_samples": 3000,
     "seq_len": 2176,
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-23 (batch_size: all requests submitted at once; seq_len: ISL + OSL)"
+    "classification": "labelled from the task code, 2026-10-23 (batch_size: none — the engine schedules the batch of each step (continuous batching) from the requests it holds, bounded by the KV cache and max_batch_size; the code does not set it. dataset_samples: the requests passed to generate(); seq_len: ISL + OSL)"
   },
   "measurements": [
     {

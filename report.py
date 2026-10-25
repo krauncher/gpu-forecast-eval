@@ -252,6 +252,74 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
     return out
 
 
+
+def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]]:
+    """The top numbers of a service over all its measurement sets, as
+    (name, value, note, status) — one tile per number. Read from a service of
+    report.json, so it can be recomputed for any stored report."""
+    ms = svc["measurements"]
+
+    def rows(key):
+        return [x for m in ms if key in m for x in m[key]["tasks"]]
+
+    out = []
+    ft = svc["forecast_time"]
+    if ft["median_sec"] is not None:
+        out.append(("Forecast time, median", f"{ft['median_sec']} s",
+                    f"p90 {ft['p90_sec']} s · max {ft['max_sec']} s", None))
+    fm = sum(v["match"] for v in svc["fields"].values())
+    ftot = sum(v["total"] for v in svc["fields"].values())
+    if ftot:
+        out.append(("Classification fields", f"{fm}/{ftot}", "match the description",
+                    "good" if fm == ftot else "critical"))
+    rt = rows("reference_time")
+    if rt:
+        typ = _typ([x["ratio"] for x in rt])
+        out.append(("Time, typical deviation", _x(typ),
+                    f"in spread {sum(x['inside_spread'] for x in rt)}/{len(rt)} · reference card",
+                    _band(typ, th["time_good"], th["time_warning"])))
+    at = rows("anchor_time")
+    if at:
+        ratios = [x["ratio"] for x in at]
+        typ = _typ(ratios)
+        out.append(("Compute time, typical deviation", _x(typ),
+                    f"centre {_x(_r(_gm(ratios)))} · {len(at)} tasks",
+                    _band(typ, th["time_good"], th["time_warning"])))
+    vr = rows("vram")
+    if vr:
+        below = sum(1 for x in vr if x["forecast"] < x["measured"])
+        out.append(("VRAM below the measured peak", f"{below}/{len(vr)}",
+                    f"centre {_x(_r(_gm([x['ratio'] for x in vr])))}", "good" if below == 0 else "critical"))
+    vb = rows("vram_bound")
+    if vb:
+        above = sum(1 for x in vb if x["status"] == "critical")
+        out.append(("VRAM above a measured bound", f"{above}/{len(vb)}", "",
+                    "good" if above == 0 else "critical"))
+    lds = [m["ladder"] for m in ms if "ladder" in m]
+    err, n, slower, miss, tot = [], 0, 0, 0, 0
+    for ld in lds:
+        n += ld["n"]
+        slower += ld["pick_slower"]
+        miss += sum(len(x["missing"]) for x in ld.get("uncovered", []))
+        for t, cells in ld["cells"].items():
+            anchor = ld.get("anchors", {}).get(t) or REFERENCE_GPU
+            tot += sum(1 for g in cells if g != anchor)
+            lp = {g: c for g, c in cells.items() if c["forecast"] is not None}
+            if len(lp) >= 2:
+                err += [abs(math.log(c["forecast"] / c["measured"])) for g, c in lp.items() if g != anchor]
+    if err:
+        typ = _r(math.exp(statistics.median(err)))
+        out.append(("Ladder, typical error", _x(typ),
+                    f"p90 {_x(_r(math.exp(_q(err, 0.9))))} · {len(err)} pairs",
+                    _band(typ, th["ratio_good"], th["ratio_warning"])))
+    if n:
+        out.append(("Fastest GPU picked right", f"{n - slower}/{n}", f"{n} tasks",
+                    "good" if slower == 0 else "critical"))
+    if miss:
+        out.append(("Measured GPUs with no forecast", f"{miss}/{tot}", "", "critical"))
+    return out
+
+
 # --------------------------------------------------------------------- markdown
 
 def render_md(rep: dict) -> str:
@@ -395,56 +463,17 @@ def render_html(rep: dict) -> str:
          f'<p class="sub">Generated {e(rep["created_utc"])}. Each value is marked '
          f'{_st("good")} time within x{th["time_good"]}, ladder ratio within '
          f'x{th["ratio_good"]}, VRAM up to x{th["vram_over_warning"]} above the measured peak · '
-         f'{_st("warning")} time within x{th["time_warning"]}, ratio within x{th["ratio_warning"]}, VRAM over-provisioned, '
-         f'a numeric field off by less than {th["field_near"]:.0%} · '
+         f'{_st("warning")} time within x{th["time_warning"]}, ratio within x{th["ratio_warning"]}, VRAM over-provisioned'
+         + (f', a numeric field off by less than {th["field_near"]:.0%}' if "field_near" in th else "")
+         + ' · '
          f'{_st("critical")} beyond that, VRAM below the peak (OOM risk) or above a measured bound, '
          f'a field that differs, a slower GPU picked as the fastest.</p>']
     for s in rep["services"]:
-        P.append(f"<h2>{e(s['service'])}</h2>")
+        P.append("<h2>Summary — all measurement sets</h2>")
         vers = [" · ".join(f"{k} {v}" for k, v in json.loads(v).items()) for v in s["versions"]]
-        P.append(f'<p class="sub">{len(s["tasks"])} tasks · ' + " | ".join(e(v) for v in vers) + "</p>")
-        ft = s["forecast_time"]
-        fm = sum(v["match"] for v in s["fields"].values())
-        ftot = sum(v["total"] for v in s["fields"].values())
-        tiles = []
-        if ft["median_sec"] is not None:
-            tiles.append(_tile("Forecast time, median", f"{ft['median_sec']} s", f"p90 {ft['p90_sec']} s · max {ft['max_sec']} s"))
-        if ftot:
-            tiles.append(_tile("Classification fields", f"{fm}/{ftot}", "match the description",
-                               "good" if fm == ftot else "critical"))
-        for m in s["measurements"]:
-            tag = f"{m['id']}"
-            if "reference_time" in m:
-                rt = m["reference_time"]
-                tiles.append(_tile("Time, typical deviation", _x(rt["typical_deviation"]),
-                                   f"{tag} · in spread {rt['inside_spread']}/{rt['n']}",
-                                   _band(rt["typical_deviation"], th["time_good"], th["time_warning"])))
-            if "anchor_time" in m:
-                at = m["anchor_time"]
-                tiles.append(_tile("Compute time, typical deviation", _x(at["typical_deviation"]),
-                                   f"{tag} · centre {_x(at['centre'])} · {at['n']} tasks",
-                                   _band(at["typical_deviation"], th["time_good"], th["time_warning"])))
-            if "vram" in m:
-                v = m["vram"]
-                tiles.append(_tile("VRAM below the measured peak", f"{v['below_peak']}/{v['n']}",
-                                   f"{tag} · centre {_x(v['centre'])}", "good" if v["below_peak"] == 0 else "critical"))
-            if "vram_bound" in m:
-                vb = m["vram_bound"]
-                tiles.append(_tile("VRAM above a measured bound", f"{vb['above']}/{vb['n']}", tag,
-                                   "good" if vb["above"] == 0 else "critical"))
-            if "ladder" in m:
-                ld = m["ladder"]
-                if ld["n"]:
-                    tiles.append(_tile("Ladder, typical error", _x(ld["typical_error"]),
-                                       f"{tag} · p90 {_x(ld['p90_error'])} · {ld['pairs']} pairs",
-                                       _band(ld["typical_error"], th["ratio_good"], th["ratio_warning"])))
-                    tiles.append(_tile("Fastest GPU picked right", f"{ld['n'] - ld['pick_slower']}/{ld['n']}",
-                                       f"{tag} · rank corr {ld['median_rank_corr']}",
-                                       "good" if ld["pick_slower"] == 0 else "critical"))
-                if ld["uncovered"]:
-                    miss = sum(len(x["missing"]) for x in ld["uncovered"])
-                    tot = sum(sum(1 for x in c.values() if x["status"] != "anchor") for c in ld["cells"].values())
-                    tiles.append(_tile("Measured GPUs with no forecast", f"{miss}/{tot}", tag, "critical"))
+        P.append(f'<p class="sub">service {e(s["service"])} · {len(s["tasks"])} tasks · '
+                 + " | ".join(e(v) for v in vers) + "</p>")
+        tiles = [_tile(k, v, n, st) for k, v, n, st in headline_tiles(s, th)]
         P.append('<div class="tiles">' + "".join(tiles) + "</div>")
 
         # classification: tasks x fields
