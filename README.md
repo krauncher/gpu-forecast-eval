@@ -79,12 +79,14 @@ runs the stand; keep them, or hand them over together with the measurements.
     .venv/bin/python report.py [--service krauncher] [--version <calibration_id>] [--out DIR]
 
 Writes `report.json` (machine-readable), `report.md` and `report.html` (for
-viewing: every value marked accurate / miss / problem) to `DIR` (default
-`results/report/`), over the latest result of every task, per service:
+viewing: every value marked accurate / miss / problem; the top is one summary
+over all measurement sets) to `DIR` (default `results/report/`), over the
+latest result of every task, per service:
 forecast time
 (request to normalised forecast, measured by the stand), classification /
 assay fields (match per field), reference-card time (centre, typical
-deviation, inside the issued spread), VRAM (centre, forecasts below the
+deviation, inside the issued spread), compute time on a set's anchor GPU,
+VRAM (centre, forecasts below the
 measured peak) and the ladder (error per GPU, rank correlation of the card
 order, time regret of the GPU picked as fastest).
 
@@ -131,6 +133,11 @@ Published benchmarks (`tasks/<source>/`, independent measurements):
 | `lambdalabs/transformer_xl_large_wt103_bs48` | Transformer-XL large training on WikiText-103, batch 48, 400 steps, fp16; Lambda GPU benchmark (A100 / H100 80 GB) |
 | `lambdalabs/transformer_xl_large_wt103_bs32`, `transformer_xl_large_wt103_bs8` | the same, batch 32, 40 steps (RTX 6000 Ada, RTX A6000, Quadro RTX 8000); batch 8, 400 steps (RTX 4090, RTX 3090, A10) |
 | `lambdalabs/bert_large_squad_amp_bs28` | BERT-large fine-tuning on SQuAD v1.1, mixed precision, batch 28, 101 steps; Lambda GPU benchmark (RTX 4090, RTX 3090, A10, 24 GB) |
+| `tensorrt_llm/llama31_8b_fp8_isl1000_osl1000`, `_isl128_osl2048`, `_isl2048_osl128` | TensorRT-LLM offline throughput, Llama 3.1 8B FP8, 3000 requests per ISL/OSL; NVIDIA perf overview (H100, H200, GH200) |
+| `tensorrt_llm/llama33_70b_fp8_tp2_isl1000_osl1000` | the same, Llama 3.3 70B FP8, TP 2 (H100, H200) |
+| `wan_video/wan21_t2v_14b_720p`, `wan21_i2v_14b_720p` | Wan2.1 text- / image-to-video 14B, 720p; Wan2.1 README efficiency table (A100, H100) |
+| `wan_video/wan21_t2v_1_3b_480p` | Wan2.1 text-to-video 1.3B, 480p, one RTX 4090; the same table |
+| `cogvideo/cogvideox_5b_t2v` | CogVideoX-5B text-to-video, 720x480, 49 frames, 50 steps, BF16, diffusers; THUDM/CogVideo README (A100, H100) |
 
 ## Adding a task
 
@@ -141,11 +148,13 @@ A task is its neutral code `tasks/<name>.py` — a plain script runnable on a
 GPU machine (the task function, the call arguments `KWARGS`, models and
 datasets by public ids) — and its description `tasks/<name>.json`: the
 expected classification and assay fields (read from the code) and one or more
-measurement sets (`reference_sec`, `min_vram_gb`, `compute_ratio` per GPU), each
+measurement sets (`reference_sec` or `anchor_compute_sec`, `min_vram_gb` or
+`vram_gb_at_most`, `compute_ratio` per GPU), each
 with its source, date and whether it is independent of the service's
 calibration. A service takes the task in its own form, a
 prepared file `variants/<service>/<name>.py`. The Krauncher variant defines
 the task function (`FUNC`) and the arguments of its `@client.task` decorator
 (`OPTIONS`) and of the call (`KWARGS`); a task that reads a registered data
 source (`OPTIONS["data"]`) lists it in `DATA_SOURCES`, and the run registers
-it on the account when missing.
+it on the account when missing. Where every expected `steps` /
+`dataset_samples` value comes from: [doc/reference_values.md](doc/reference_values.md).
