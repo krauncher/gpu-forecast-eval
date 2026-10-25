@@ -98,6 +98,7 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
             "ratio_good": scoring.RATIO_GOOD, "ratio_warning": scoring.RATIO_WARN,
             "vram_over_warning": scoring.VRAM_OVER_WARN, "params_tolerance": scoring.PARAMS_TOL,
             "field_near": scoring.FIELD_NEAR,
+            "fields_good": scoring.FIELDS_GOOD, "fields_warning": scoring.FIELDS_WARN,
         },
         "services": [],
     }
@@ -270,8 +271,10 @@ def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]
     fm = sum(v["match"] for v in svc["fields"].values())
     ftot = sum(v["total"] for v in svc["fields"].values())
     if ftot:
-        out.append(("Classification fields", f"{fm}/{ftot}", "match the description",
-                    "good" if fm == ftot else "critical"))
+        share = fm / ftot
+        good, warn = th.get("fields_good", scoring.FIELDS_GOOD), th.get("fields_warning", scoring.FIELDS_WARN)
+        out.append(("Classification fields", f"{fm}/{ftot}", f"match the description · {share:.1%}",
+                    "good" if share >= good else "warning" if share >= warn else "critical"))
     rt = rows("reference_time")
     if rt:
         typ = _typ([x["ratio"] for x in rt])

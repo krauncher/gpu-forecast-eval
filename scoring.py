@@ -12,6 +12,7 @@ MEASURED = ("reference_sec", "min_vram_gb", "compute_ratio", "anchor_compute_sec
 
 
 FIELD_NEAR = 0.10                              # a numeric field off by less than 10 %: warning
+FIELDS_GOOD, FIELDS_WARN = 0.95, 0.85          # share of matching fields: good / warning, below: critical
 
 
 def field_status(field: str, want, got) -> str:
