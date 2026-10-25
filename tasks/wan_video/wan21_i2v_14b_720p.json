@@ -10,7 +10,7 @@
     "cpu_only": false
   },
   "sources": {
-    "classification": "labelled from the task code, 2026-10-23 (params_billions: the DiT of Wan2.1 I2V-14B; text and image encoders not counted)"
+    "classification": "labelled from the task code, 2026-10-23 (params_billions: the DiT of Wan2.1 I2V-14B; text and image encoders not counted; precision bf16 is set by the Wan2.1 library, not the task code: param_dtype = torch.bfloat16 (wan/configs/shared_config.py:14 at 9737cba), the DiT runs under amp.autocast(dtype=param_dtype) (text2video.py:204, image2video.py:258) with its weights fp32 as on the Hub)"
   },
   "measurements": [
     {
