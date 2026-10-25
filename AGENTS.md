@@ -179,10 +179,12 @@ measured values:
 
 | Field | Compared with (Krauncher) | How to obtain |
 |---|---|---|
-| `fields`: `workload_type`, `mode`, `framework`, `precision`, `params_billions`, `batch_size`, `epochs`, `dataset_samples`, `seq_len`, `cpu_only` | `assay.workload` / `assay.requirements.cpu_only`; printed ok / DIFF (`params_billions` within ±25 %, no precision = fp32) | read from the task code: what the task is, not what any service answers |
+| `fields`: `workload_type`, `mode`, `framework`, `inference_engine`, `precision`, `params_billions`, `batch_size`, `epochs`, `steps`, `dataset_samples`, `seq_len`, `cpu_only` | `assay.workload` (`steps`: `assay.work.steps`) / `assay.requirements.cpu_only`; ok / DIFF (`params_billions` within ±25 %, no precision = fp32); a numeric value off by < 10 % is a warning, not a match | read from the task code: what the task is, not what any service answers. Meanings and the provenance of `steps` / `dataset_samples`: `doc/reference_values.md` |
 | `reference_sec` | `assay.work.reference_sec` | whole task, seconds, on RTX PRO 6000 Blackwell |
 | `min_vram_gb` | `assay.requirements.min_vram_gb` | peak VRAM of the run, GB |
 | `compute_ratio` | ladder `compute_ratio` per `gpu_id` | compute on the GPU / compute on the reference card, where compute = whole task − download − setup |
+| `anchor_compute_sec` | the compute phase on `anchor_gpu` (from `reference_sec` and the ladder) | compute time on the anchor GPU, e.g. work / published throughput |
+| `vram_gb_at_most` | `assay.requirements.min_vram_gb` | an upper bound: the run completed on a card of that memory |
 
 A task can carry several measurement sets (own runs, published results, a
 validator's runs); `independent` says whether the set is independent of the
@@ -199,7 +201,10 @@ and take them from `raw.ladder.rows[].gpu_id` in the result file.
 
 A task that names a registered data source (`OPTIONS["data"]`) lists it so
 `run.py` registers it on the account when missing; the analyzer gets the
-dataset size from it:
+dataset size from it. A training set defined by a file the code reads (a
+file list, a CSV / JSON-lines manifest) is passed as a `krauncher.DataManifest`
+argument in `KWARGS`, counted from a copy of the file in `data/` (see the
+LJSpeech variants):
 
 ```python
 DATA_SOURCES = [
@@ -210,7 +215,7 @@ DATA_SOURCES = [
 ### Check
 
 ```bash
-.venv/bin/python -c "from tasks import <name> as t; print(t.FUNC.__name__, t.OPTIONS, t.KWARGS)"
+.venv/bin/python -c "from variants.krauncher.<source> import <name> as t; print(t.FUNC.__name__, t.OPTIONS, t.KWARGS)"
 .venv/bin/python run.py <source>/<name>
 ```
 
@@ -229,6 +234,7 @@ calibration runs (the data the analyzer is calibrated on, so not an independent
 check): `bert_imdb`, `qwen25_7b_lora_alpaca`, `qwen25_7b_gsm8k`,
 `qwen25_7b_batched`, `qwen25_7b_long`, `phi3_inference`, `qwen15_inference`,
 `bert_batch_inference`, `vit_batch_inference`, `resnet152_food101`. Use them as
-templates.
+templates. Tasks with independent published measurements (Lambda, TensorRT-LLM,
+Wan2.1, CogVideoX) are listed in README.md.
 
 Do not commit `.env`, `.venv/` or `client/`.

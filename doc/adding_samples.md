@@ -117,7 +117,9 @@ Leave out a field you cannot state.
 | `framework` | `pytorch`, `tensorflow`, `jax`, ... |
 | `precision` | `fp32`, `fp16`, `bf16`, `fp8`, `int8`, `int4`, ... — what the code computes in (no setting = `fp32`) |
 | `params_billions` | model size, billions of parameters (scored within ±25 %) |
-| `batch_size`, `epochs`, `dataset_samples`, `seq_len` | as the code runs them; `batch_size` 1 for one prompt per `generate` call |
+| `inference_engine` | the library the code hands the model to (`transformers`, `diffusers`, `vllm`, `tensorrt_llm`, ...); `null` for training and for a model run by its own code |
+| `batch_size`, `epochs`, `seq_len` | as the code runs them; `batch_size` 1 for one prompt per `generate` call, `null` for an engine with continuous batching (vLLM, TensorRT-LLM: the engine sets the batch); `seq_len` of a generation = prompt + generated tokens |
+| `steps`, `dataset_samples` | batch passes of the run; the set the loop iterates per epoch (tokenized features, sampled negatives, requests included). Record where each value comes from in `doc/reference_values.md` |
 | `cpu_only` | `true` when the code does not use a GPU |
 
 ### `measurements` — what was measured
