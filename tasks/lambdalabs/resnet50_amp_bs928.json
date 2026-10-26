@@ -32,7 +32,7 @@
       },
       "compute_ratio_note": "throughput[RTX 6000 Ada] / throughput[GPU]; one row per GPU",
       "vram_gb_at_most": 48,
-      "vram_gb_at_most_note": "the run completed with batch 928 on 48 GB cards (RTX 6000 Ada, RTX A6000, Quadro RTX 8000), so the peak is at most 48 GB"
+      "vram_gb_at_most_note": "the run completed with batch 928 on 48 GB cards (RTX 6000 Ada, RTX A6000, Quadro RTX 8000), so the peak is at most 48 GB; Lambda's batch sizes grow with card memory (pytorch/pytorch-train-bs-fp16.csv, commit aa5addb6: 24 / 40 / 48 / 80 GB), so the peak is likely close to the card size; this bound does not check an underestimate"
     }
   ]
 }

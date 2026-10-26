@@ -30,8 +30,8 @@
         "h200": 0.876
       },
       "compute_ratio_note": "throughput[H100] / throughput[GPU], same ISL/OSL and TP",
-      "vram_gb_at_most": 80,
-      "vram_gb_at_most_note": "the run completed on H100 SXM 80GB (TP 2); the KV cache takes 90 % of the memory left after the model, so the peak is not the model's need"
+      "vram_gb_at_most": 160,
+      "vram_gb_at_most_note": "the run completed on 2 x H100 SXM 80GB (TP 2): at most 160 GB over both cards, compared with the forecast for the whole model (the analyzer does not read TP); the KV cache takes 0.90-0.95 of the memory left after the model (--kv_cache_free_gpu_mem_fraction, perf-overview.md:262), so the peak follows the card, not the task; this bound does not check an underestimate"
     }
   ]
 }

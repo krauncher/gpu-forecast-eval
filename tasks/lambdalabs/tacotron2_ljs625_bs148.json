@@ -24,7 +24,7 @@
       "date": "measurement dates are not in the CSV; repository snapshot 2025-12-17",
       "hardware": "Lambda's systems as named in the rows; NVIDIA NGC PyTorch container (version not recorded per row), LambdaLabsML/DeepLearningExamples branch lambda/benchmark",
       "vram_gb_at_most": 48,
-      "vram_gb_at_most_note": "the run completed with batch 148 on 48 GB cards, so the peak is at most 48 GB (the 24 GB cards were run with batch 88)",
+      "vram_gb_at_most_note": "the run completed with batch 148 on 48 GB cards, so the peak is at most 48 GB (the 24 GB cards were run with batch 88); Lambda's batch sizes grow with card memory (pytorch/pytorch-train-bs-fp16.csv, commit aa5addb6: 24 / 40 / 48 / 80 GB), so the peak is likely close to the card size; this bound does not check an underestimate",
       "anchor_gpu": "rtx_6000_ada",
       "compute_ratio": {
         "rtx_6000_ada": 1.0,

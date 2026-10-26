@@ -29,7 +29,9 @@
       },
       "compute_ratio_note": "time[H100] / time[A100] = ~90 / ~180; both values rounded in the source. 'A100' and 'H100' taken as the 80 GB SXM cards (not stated)",
       "vram_gb_at_most": 80,
-      "vram_gb_at_most_note": "the run completed on single A100 and H100; the README gives 'diffusers BF16: 5GB minimum' with these optimisations, not the peak of this run, so only an upper bound is stated"
+      "vram_gb_at_most_note": "the run completed on single A100 and H100 (80 GB)",
+      "min_vram_gb": 5,
+      "min_vram_gb_note": "README.md:219 (CogVideoX-5B column), 'diffusers BF16: 5GB minimum', with all diffusers optimisations enabled (README.md:276-285): enable_sequential_cpu_offload, vae.enable_slicing, vae.enable_tiling, as in this task; the speed column (A100 ~180 s, H100 ~90 s) used the same optimisations (README.md:298). 'GB' as published (GB or GiB not stated); measured on A100 / H100 only (README.md:277)"
     }
   ]
 }
