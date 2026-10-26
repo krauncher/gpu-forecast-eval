@@ -23,7 +23,7 @@
       "date": "measurement dates are not in the CSV; repository snapshot 2025-12-17",
       "hardware": "Lambda's systems as named in the rows; NVIDIA NGC PyTorch container (version not recorded per row), LambdaLabsML/DeepLearningExamples branch lambda/benchmark; fp16 through APEX AMP O2 (the task file uses torch.cuda.amp: see its docstring)",
       "vram_gb_at_most": 80,
-      "vram_gb_at_most_note": "the run completed with batch 104 on 80 GB cards, so the peak is at most 80 GB (the 48 GB cards were run with batch 64)",
+      "vram_gb_at_most_note": "the run completed with batch 104 on 80 GB cards, so the peak is at most 80 GB (the 48 GB cards were run with batch 64); Lambda's batch sizes grow with card memory (pytorch/pytorch-train-bs-fp16.csv, commit aa5addb6: 24 / 40 / 48 / 80 GB), so the peak is likely close to the card size; this bound does not check an underestimate",
       "anchor_gpu": "a100_sxm_80",
       "anchor_compute_sec": 185.4,
       "anchor_compute_sec_note": "training work / published throughput of 'A100 80GB SXM4': 400 steps x batch 104 x target length 192 = 7 987 200 tokens; / 43 078 tokens/s. The benchmark's throughput covers the training steps: start-up, data download and validation are outside it",

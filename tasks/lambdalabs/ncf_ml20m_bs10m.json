@@ -24,7 +24,7 @@
       "date": "measurement dates are not in the CSV; repository snapshot 2025-12-17",
       "hardware": "Lambda's systems as named in the rows; NVIDIA NGC PyTorch container (version not recorded per row), LambdaLabsML/DeepLearningExamples branch lambda/benchmark",
       "vram_gb_at_most": 80,
-      "vram_gb_at_most_note": "the run completed with batch 10 000 000 on 80 GB cards (A100, H100), so the peak is at most 80 GB",
+      "vram_gb_at_most_note": "the run completed with batch 10 000 000 on 80 GB cards (A100, H100), so the peak is at most 80 GB; the batch is capped at 10 000 000 on 48 and 80 GB cards, so here it does not follow card memory; this bound does not check an underestimate",
       "anchor_gpu": "a100_sxm_80",
       "anchor_compute_sec": 5.8,
       "anchor_compute_sec_note": "training work / published throughput of 'A100 80GB SXM4': 2 epochs x 9 batches (99 308 850 samples per epoch: 19 861 770 positives  4 negatives each; last partial batch dropped) x batch 10000000 = 180 000 000 samples; / 30 787 381 samples/s. The benchmark's throughput covers the training steps: start-up, data download and validation are outside it",

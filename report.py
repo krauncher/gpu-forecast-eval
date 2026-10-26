@@ -296,7 +296,7 @@ def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]
     vb = rows("vram_bound")
     if vb:
         above = sum(1 for x in vb if x["status"] == "critical")
-        out.append(("VRAM above a measured bound", f"{above}/{len(vb)}", "",
+        out.append(("VRAM above a measured bound", f"{above}/{len(vb)}", "an upper bound does not check an underestimate",
                     "good" if above == 0 else "critical"))
     lds = [m["ladder"] for m in ms if "ladder" in m]
     err, n, slower, miss, tot = [], 0, 0, 0, 0
@@ -530,7 +530,8 @@ def render_html(rep: dict) -> str:
                           _st(x["status"], "above the bound" if x["status"] == "critical" else "within the bound")]
                          for x in m.get("vram_bound", {}).get("tasks", [])]
                 P.append('<p class="note">VRAM, GB: the measured peak, or an upper bound (the run completed on a card of '
-                         'that size), against the forecast requirement.</p>')
+                         'that size), against the forecast requirement. An upper bound catches over-provisioning beyond the card only; '
+                         'it does not check an underestimate.</p>')
                 P.append(_tbl(["task", "measured", "forecast", "forecast / measured", "status"], rows, frozenset({1, 2, 3})))
             if "ladder" in m:
                 ld = m["ladder"]

@@ -72,7 +72,7 @@ def anchor_time(meas: dict, got: dict) -> tuple[float, float] | None:
 # |log(forecast / measured)|; the report states them.
 TIME_GOOD, TIME_WARN = 1.10, 1.25      # reference_sec
 RATIO_GOOD, RATIO_WARN = 1.15, 1.50    # compute_ratio per GPU
-VRAM_OVER_WARN = 1.30                  # forecast / measured peak above this: over-provisioning
+VRAM_OVER_WARN = 1.25                  # forecast / measured peak above this: over-provisioning
 
 
 def time_status(forecast: float, measured: float) -> str:
