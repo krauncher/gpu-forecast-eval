@@ -245,13 +245,30 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
                     "p90_error": _r(math.exp(_q(all_err, 0.9))) if all_err else None,
                     "median_rank_corr": _r(statistics.median(ranks), 2) if (ranks := [x["rank_corr"] for x in lrows
                                                                                   if x["rank_corr"] is not None]) else None,
-                    "pick_slower": sum(1 for x in lrows if x["time_regret"] > 1.0001),
-                    "n": len(lrows), "tasks": lrows, "cells": cells, "uncovered": uncovered,
+                    "pick_slower": pick_counts(cells)[1],
+                    "n": pick_counts(cells)[0], "tasks": lrows, "cells": cells, "uncovered": uncovered,
                     "anchors": anchors}
             svc["measurements"].append(ms)
         out["services"].append(svc)
     return out
 
+
+
+def pick_counts(cells: dict) -> tuple[int, int]:
+    """(tasks, picks slower than the fastest) over the ladder cells. A task
+    counts when it is measured on two or more cards, whatever the service
+    forecast: the pick is the card with the smallest forecast ratio, and a
+    task with no forecast for its fastest measured card is a slower pick."""
+    n = slower = 0
+    for c in cells.values():
+        if len(c) < 2:
+            continue
+        n += 1
+        best = min(c, key=lambda g: c[g]["measured"])
+        lp = [g for g in c if c[g]["forecast"] is not None]
+        if not lp or c[min(lp, key=lambda g: c[g]["forecast"])]["measured"] / c[best]["measured"] > 1.0001:
+            slower += 1
+    return n, slower
 
 
 def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]]:
@@ -301,8 +318,10 @@ def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]
     lds = [m["ladder"] for m in ms if "ladder" in m]
     err, n, slower, miss, tot = [], 0, 0, 0, 0
     for ld in lds:
-        n += ld["n"]
-        slower += ld["pick_slower"]
+        # from the cells, so reports stored with the old count read the same way
+        ld_n, ld_slower = pick_counts(ld["cells"])
+        n += ld_n
+        slower += ld_slower
         miss += sum(len(x["missing"]) for x in ld.get("uncovered", []))
         for t, cells in ld["cells"].items():
             anchor = ld.get("anchors", {}).get(t) or REFERENCE_GPU
@@ -316,7 +335,7 @@ def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]
                     f"p90 {_x(_r(math.exp(_q(err, 0.9))))} · {len(err)} pairs",
                     _band(typ, th["ratio_good"], th["ratio_warning"])))
     if n:
-        out.append(("Fastest GPU picked right", f"{n - slower}/{n}", f"{n} tasks",
+        out.append(("Fastest GPU picked right", f"{n - slower}/{n}", "",
                     "good" if slower == 0 else "critical"))
     if miss:
         out.append(("Measured GPUs with no forecast", f"{miss}/{tot}", "", "critical"))
