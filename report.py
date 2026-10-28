@@ -611,6 +611,18 @@ def _html_ladder(m: dict, th: dict) -> list[str]:
     return P
 
 
+# Rows of the header tiles: the base of the forecast, then what is derived from it
+# (the forecast's own speed leads the first row).
+_TILE_ROWS = (
+    ("Base: classification and VRAM", ("Forecast time, median", "Classification fields", "VRAM below the measured peak",
+                                       "VRAM close to the measured peak", "VRAM above a measured bound")),
+    ("Derived: time, performance and ladder", ("Time, typical deviation", "Compute time, typical deviation",
+                                               "Ladder, typical error", "Fastest GPU picked right",
+                                               "Measured GPUs with no forecast")),
+    ("Other", ()),
+)
+
+
 def render_html(rep: dict) -> str:
     th, e = rep["thresholds"], html.escape
     P = ["<h1>Forecast quality report</h1>",
@@ -628,8 +640,16 @@ def render_html(rep: dict) -> str:
         vers = [" · ".join(f"{k} {v}" for k, v in json.loads(v).items()) for v in s["versions"]]
         P.append(f'<p class="sub">service {e(s["service"])} · {len(s["tasks"])} tasks · '
                  + " | ".join(e(v) for v in vers) + "</p>")
-        tiles = [_tile(k, v, n, st) for k, v, n, st in headline_tiles(s, th)]
-        P.append('<div class="tiles">' + "".join(tiles) + "</div>")
+        # Base first (classification and VRAM), then what is derived from it
+        # (time, ladder); unknown names go last.
+        tiles = headline_tiles(s, th)
+        for label, names in _TILE_ROWS:
+            row = [t for t in tiles if t[0] in names] if names else \
+                [t for t in tiles if not any(t[0] in n for _, n in _TILE_ROWS if n)]
+            row.sort(key=lambda t: names.index(t[0]) if names else 0)
+            if row:
+                P.append(f'<p class="note">{e(label)}</p>')
+                P.append('<div class="tiles">' + "".join(_tile(*t) for t in row) + "</div>")
 
         # classification: tasks x fields
         fnames = list(s["fields"])
