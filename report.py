@@ -185,6 +185,7 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
                 ms["vram"] = {"centre": _r(_gm([x["ratio"] for x in rows])),
                               "typical_deviation": _typ([x["ratio"] for x in rows]),
                               "below_peak": sum(1 for x in rows if x["forecast"] < x["measured"]),
+                              "close": sum(1 for x in rows if scoring.VRAM_CLOSE[0] <= x["ratio"] <= scoring.VRAM_CLOSE[1]),
                               "n": len(rows), "tasks": rows}
             bounds = []
             for t in have:
@@ -313,6 +314,11 @@ def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]
         below = sum(1 for x in vr if x["forecast"] < x["measured"])
         out.append(("VRAM below the measured peak", f"{below}/{len(vr)}",
                     f"centre {_x(_r(_gm([x['ratio'] for x in vr])))}", "good" if below == 0 else "critical"))
+        lo, hi = scoring.VRAM_CLOSE
+        close = sum(1 for x in vr if lo <= x["ratio"] <= hi)
+        out.append(("VRAM close to the measured peak", f"{close}/{len(vr)}",
+                    f"forecast x{lo:.2f}-{hi:.2f} of the peak · higher is better",
+                    "good" if close == len(vr) else "warning" if 2 * close >= len(vr) else "critical"))
     vb = rows("vram_bound")
     if vb:
         above = sum(1 for x in vb if x["status"] == "critical")
@@ -375,7 +381,8 @@ def _md_vram(m: dict) -> list[str]:
     L = []
     if "vram" in m:
         x = m["vram"]
-        L += ["##### Measured peak", ""] + _md_ratio(x, "GB", f"below the measured peak {x['below_peak']}/{x['n']}")
+        close = f", close to it (x{scoring.VRAM_CLOSE[0]:.2f}-{scoring.VRAM_CLOSE[1]:.2f}) {x['close']}/{x['n']}" if "close" in x else ""
+        L += ["##### Measured peak", ""] + _md_ratio(x, "GB", f"below the measured peak {x['below_peak']}/{x['n']}{close}")
     if "vram_bound" in m:
         vb = m["vram_bound"]
         L += ["##### Upper bound", "", f"forecast above the measured bound in {vb['above']}/{vb['n']} tasks"

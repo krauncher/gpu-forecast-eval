@@ -74,6 +74,7 @@ TIME_GOOD, TIME_WARN = 1.10, 1.25      # reference_sec
 RATIO_GOOD, RATIO_WARN = 1.15, 1.50    # compute_ratio per GPU
 VRAM_OVER_WARN = 1.25                  # forecast / measured peak above this: over-provisioning
 VRAM_BOUND_FAR = 0.50                  # forecast below this share of an upper bound: warning
+VRAM_CLOSE = (0.90, 1.20)              # forecast / measured peak inside this range: a close hit
 
 
 def time_status(forecast: float, measured: float) -> str:
