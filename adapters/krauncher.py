@@ -3,6 +3,7 @@ and the GPU ladder, read into the stand's fields."""
 
 import subprocess
 import time
+import krauncher
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,7 +12,19 @@ from krauncher import KrauncherClient, KrauncherError
 from interface import ServiceInterface
 from models import Forecast, Task
 
-CLIENT = Path(__file__).resolve().parent.parent / "client"
+# The tree the client is imported from (an editable install may point outside
+# the stand's own client/): its commit is the client version of a result.
+CLIENT = Path(krauncher.__file__).resolve().parent.parent
+
+
+def client_commit() -> str:
+    """The commit of the imported client's tree, "+dirty" when it has
+    uncommitted changes: the code that made the forecast, not a copy beside it."""
+    head = subprocess.run(["git", "-C", str(CLIENT), "rev-parse", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    dirty = subprocess.run(["git", "-C", str(CLIENT), "status", "--porcelain", "--untracked-files=no", "--", "."],
+                           capture_output=True, text=True).stdout.strip()
+    return head + ("+dirty" if head and dirty else "")
 
 
 def _ensure_data_sources(client: KrauncherClient, sources: list[dict]) -> None:
@@ -75,9 +88,7 @@ class KrauncherAdapter(ServiceInterface):
             created_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
             version={
                 "calibration_id": ladder["meta"]["calibration_id"],
-                "client_commit": subprocess.run(
-                    ["git", "-C", str(CLIENT), "rev-parse", "HEAD"],
-                    capture_output=True, text=True).stdout.strip(),
+                "client_commit": client_commit(),
             },
             fields=stand_fields(assay, ladder),
             raw={"assay": assay, "ladder": ladder},
