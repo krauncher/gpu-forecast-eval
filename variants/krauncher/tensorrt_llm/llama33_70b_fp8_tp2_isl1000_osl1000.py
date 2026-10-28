@@ -5,13 +5,25 @@ and its sources are in tasks/tensorrt_llm/llama33_70b_fp8_tp2_isl1000_osl1000.js
 The task function is the neutral one, unchanged. FUNC is the task, OPTIONS
 the arguments of its @client.task decorator, KWARGS the arguments of the
 call.
+
+Adaptation to the forecast (2026-10-28): OPTIONS carries a
+krauncher.ModelManifest of the checkpoint the task loads, read from the Hub at
+the pinned revision (config.json, hf_quant_config.json, the safetensors index:
+tensor bytes, decoder dims, the FP8 KV cache). It goes to the analyzer only,
+for the memory estimate of a preallocating engine; the task and its call are
+unchanged. Without it the analyzer falls back to its registry.
 """
+
+from krauncher import ModelManifest
+
+MODEL_MANIFEST = ModelManifest.from_hf("nvidia/Llama-3.3-70B-Instruct-FP8", revision="fde04ee76a27704c88f569542ef023b57d4d0362")
 
 OPTIONS = dict(
     timeout=7200,
     data_urls=['hf://models/nvidia/Llama-3.3-70B-Instruct-FP8'],
     pip=['tensorrt_llm', 'transformers'],
     stream_stderr=True,
+    model_manifest=MODEL_MANIFEST,
 )
 
 KWARGS = dict(num_requests=3000, isl=1000, osl=1000, tp=2, warmup=2)
