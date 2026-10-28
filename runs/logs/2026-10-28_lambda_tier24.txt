@@ -1,0 +1,110 @@
+(.venv) cas@batty1088:~/src/CaS/cas-client$ KRAUNCHER_GPU_NAME="4090" python other/lambda_vram_tier24.py
+    patch bert_base_squad_amp_bs96: 'tokenizer(ds["question"], ds["context"],' (1 lines): datasets 4.x returns a lazy Column for ds[name], which the H...
+--- bert_base_squad_amp_bs96  forecast 14 GB  bound 24 GB  options {'timeout': 3600, 'data_urls': ['hf://datasets/rajpurkar/squad', 'hf://models/google-bert/bert-base-uncased'], 'vram_gb': 22, 'gpu_name': 'RTX 4090', 'stream_stderr': True}
+Waiting for worker...
+Host obtained: RTX 4090, 47GB, (vastai)
+Waiting for provision (up to 2 min)
+Wait time: 2 sec
+Executing on worker-8a40d7e5: RTX 4090, 47GB, (vastai), storage 1498 MB/s, PCIe 24.9 GB/s, net 800 MB/s
+Downloading assets (3310 MB), ETA ~4s
+Download complete in 17s (198.4 MB/s)
+VRAM_PEAK gpu=NVIDIA GeForce RTX 4090 total_gb=47.45 context_gb=1.02 allocated_gb=15.69 reserved_gb=15.98 device_used_gb=17.09 run_sec=68.9
+Task bee8d1ab done in 91.0s — compute 2.5375 KU (€0.0203) — fee 0.8000 KU (€0.0073) — total 3.3375 KU (€0.0276)
+RESULT bert_base_squad_amp_bs96 status=completed gpu=NVIDIA GeForce RTX 4090 worker=worker-8a40d7e5 download=16.7s pip=0.0s compute=74.0s total=90.7s queue=0.1s
+VRAM bert_base_squad_amp_bs96 device_used=17.09 GB reserved=15.98 GB allocated=15.69 GB context=1.02 GB | forecast 14 GB = x0.82 of device_used
+OUTPUT bert_base_squad_amp_bs96 {'vram': {'gpu': 'NVIDIA GeForce RTX 4090', 'total_gb': 47.45, 'context_gb': 1.02, 'allocated_gb': 15.69, 'reserved_gb': 15.98, 'device_used_gb': 17.09, 'run_sec': 68.9}, 'task_output': {'features': 88524, 'steps': 101, 'elapsed_sec': 27.89, 'sequences_per_sec': 347.6, 'last_loss': 6.017}}
+    patch bert_large_squad_amp_bs28: 'tokenizer(ds["question"], ds["context"],' (1 lines): datasets 4.x returns a lazy Column for ds[name], which the H...
+--- bert_large_squad_amp_bs28  forecast 16 GB  bound 24 GB  options {'timeout': 3600, 'data_urls': ['hf://datasets/rajpurkar/squad', 'hf://models/google-bert/bert-large-uncased'], 'vram_gb': 22, 'gpu_name': 'RTX 4090', 'stream_stderr': True}
+Waiting for worker...
+Host obtained: RTX 4090, 47GB, (vastai)
+Waiting for provision (up to 2 min)
+Wait time: 2 sec
+Executing on worker-8a40d7e5: RTX 4090, 47GB, (vastai), storage 1498 MB/s, PCIe 24.9 GB/s, net 800 MB/s
+Downloading assets (7858 MB), ETA ~10s
+Download complete in 15s (523.7 MB/s)
+VRAM_PEAK gpu=NVIDIA GeForce RTX 4090 total_gb=47.45 context_gb=1.02 allocated_gb=15.15 reserved_gb=15.63 device_used_gb=16.73 run_sec=65.1
+Task d906174f done in 86.0s — compute 2.4000 KU (€0.0192) — fee 0.8000 KU (€0.0073) — total 3.2000 KU (€0.0265)
+RESULT bert_large_squad_amp_bs28 status=completed gpu=NVIDIA GeForce RTX 4090 worker=worker-8a40d7e5 download=15.0s pip=0.0s compute=70.4s total=85.4s queue=0.1s
+VRAM bert_large_squad_amp_bs28 device_used=16.73 GB reserved=15.63 GB allocated=15.15 GB context=1.02 GB | forecast 16 GB = x0.96 of device_used
+OUTPUT bert_large_squad_amp_bs28 {'vram': {'gpu': 'NVIDIA GeForce RTX 4090', 'total_gb': 47.45, 'context_gb': 1.02, 'allocated_gb': 15.15, 'reserved_gb': 15.63, 'device_used_gb': 16.73, 'run_sec': 65.1}, 'task_output': {'features': 88524, 'steps': 101, 'elapsed_sec': 25.54, 'sequences_per_sec': 110.7, 'last_loss': 5.953}}
+    patch ncf_ml20m_bs4278184: 'from apex import amp' (2 lines): NVIDIA apex is not on PyPI and not in the worker image (the ...
+    patch ncf_ml20m_bs4278184: 'model = NeuMF().to(device)' (5 lines): NVIDIA apex is not on PyPI and not in the worker image (the ...
+    patch ncf_ml20m_bs4278184: 'loss = criterion(model(users[idx], items[idx]).view(-1), labels[idx]).float()' (5 lines): NVIDIA apex is not on PyPI and not in the worker image (the ...
+--- ncf_ml20m_bs4278184  forecast 18 GB  bound 24 GB  options {'timeout': 3600, 'data': 'ml-20m', 'vram_gb': 22, 'gpu_name': 'RTX 4090', 'stream_stderr': True}
+Waiting for worker...
+Host obtained: RTX 4090, 47GB, (vastai)
+Waiting for provision (up to 2 min)
+Wait time: 2 sec
+Executing on worker-8a40d7e5: RTX 4090, 47GB, (vastai), storage 1498 MB/s, PCIe 24.9 GB/s, net 800 MB/s
+Downloading assets (205 MB)
+Download complete in 3s (69.3 MB/s)
+epoch 1/2: 3.129e+07 samples/s, hr@10 0.6518, loss 0.3476
+epoch 2/2: 3.553e+07 samples/s, hr@10 0.8138, loss 0.2386
+VRAM_PEAK gpu=NVIDIA GeForce RTX 4090 total_gb=47.45 context_gb=1.02 allocated_gb=17.33 reserved_gb=22.98 device_used_gb=24.09 run_sec=21.1
+Task 6a1d7a27 done in 28.0s — compute 0.7875 KU (€0.0063) — fee 0.8000 KU (€0.0073) — total 1.5875 KU (€0.0136)
+RESULT ncf_ml20m_bs4278184 status=completed gpu=NVIDIA GeForce RTX 4090 worker=worker-8a40d7e5 download=2.7s pip=0.0s compute=24.8s total=27.6s queue=0.1s
+VRAM ncf_ml20m_bs4278184 device_used=24.09 GB reserved=22.98 GB allocated=17.33 GB context=1.02 GB | forecast 18 GB = x0.75 of device_used
+OUTPUT ncf_ml20m_bs4278184 {'vram': {'gpu': 'NVIDIA GeForce RTX 4090', 'total_gb': 47.45, 'context_gb': 1.02, 'allocated_gb': 17.33, 'reserved_gb': 22.98, 'device_used_gb': 24.09, 'run_sec': 21.1}, 'task_output': {'train_samples': 19861770, 'epochs': 2, 'mean_train_samples_per_sec': 33410623.8, 'hr@10': 0.8138}}
+/tmp/vram_tier24_svii3_s7/vram_tacotron2_ljs625_bs88.py:371: SyntaxWarning: "is not" with 'str' literal. Did you mean "!="?
+  return s in _symbol_to_id and s is not '_' and s is not '~'
+    override tacotron2_ljs625_bs88: {'pip': ['librosa', 'lazy-loader', 'numba', 'llvmlite', 'msgpack', 'pooch', 'inflect==7.5.0', 'more-itertools', 'typeguard']}: the worker installs packages with --no-deps: librosa / inflect fail to import without their dependencies (lazy_loader, jaraco)
+--- tacotron2_ljs625_bs88  forecast 6 GB  bound 24 GB  options {'timeout': 3600, 'data': 'ljspeech-11-dle', 'pip': ['librosa', 'lazy-loader', 'numba', 'llvmlite', 'msgpack', 'pooch', 'inflect==7.5.0', 'more-itertools', 'typeguard'], 'vram_gb': 22, 'gpu_name': 'RTX 4090', 'stream_stderr': True}
+<krauncher:vram_train_tacotron2>:371: SyntaxWarning: "is not" with 'str' literal. Did you mean "!="?
+Waiting for worker...
+Host obtained: RTX 4090, 47GB, (vastai)
+Waiting for provision (up to 2 min)
+Wait time: 2 sec
+Executing on worker-8a40d7e5: RTX 4090, 47GB, (vastai), storage 1498 MB/s, PCIe 24.9 GB/s, net 800 MB/s
+Downloading assets (2662 MB), ETA ~3s
+Download complete in 79s (33.1 MB/s)
+VRAM_PEAK gpu=NVIDIA GeForce RTX 4090 total_gb=47.45 context_gb=1.02 allocated_gb=22.13 reserved_gb=23.8 device_used_gb=24.91 run_sec=236.5
+Task 1bf7d3e3 done in 335.0s — compute 9.3500 KU (€0.0748) — fee 0.8000 KU (€0.0073) — total 10.1500 KU (€0.0821)
+RESULT tacotron2_ljs625_bs88 status=completed gpu=NVIDIA GeForce RTX 4090 worker=worker-8a40d7e5 download=79.2s pip=14.1s compute=241.3s total=334.6s queue=0.1s
+VRAM tacotron2_ljs625_bs88 device_used=24.91 GB reserved=23.8 GB allocated=22.13 GB context=1.02 GB | forecast 6 GB = x0.24 of device_used
+OUTPUT tacotron2_ljs625_bs88 {'vram': {'gpu': 'NVIDIA GeForce RTX 4090', 'total_gb': 47.45, 'context_gb': 1.02, 'allocated_gb': 22.13, 'reserved_gb': 23.8, 'device_used_gb': 24.91, 'run_sec': 236.5}, 'task_output': {'train_items_per_sec': 29133.53734180584, 'val_loss': 46.38776206970215}}
+    override transformer_xl_base_wt103_bs24: {'data': 'wikitext-103-v1-smerity'}: the stand's and the account's data source 'wikitext-103-v1' points to the LJSpeech archive, the task reads /data/wikitext-103-v1.zip; a separate source with the archive the task's docstring names (wikitext.smerity.com)
+--- transformer_xl_base_wt103_bs24  forecast 5 GB  bound 24 GB  options {'timeout': 3600, 'data': 'wikitext-103-v1-smerity', 'vram_gb': 22, 'gpu_name': 'RTX 4090', 'stream_stderr': True}
+Waiting for worker...
+Host obtained: RTX 4090, 47GB, (vastai)
+Waiting for provision (up to 2 min)
+Wait time: 3 sec
+Executing on worker-8a40d7e5: RTX 4090, 47GB, (vastai), storage 1498 MB/s, PCIe 24.9 GB/s, net 178 MB/s
+Downloading assets (205 MB), ETA ~1s
+Download complete in 2s (89.6 MB/s)
+building vocab with min_freq=0, max_size=None
+final vocab size 267735 from 267734 unique tokens
+VRAM_PEAK gpu=NVIDIA GeForce RTX 4090 total_gb=47.45 context_gb=1.02 allocated_gb=17.29 reserved_gb=22.19 device_used_gb=23.3 run_sec=130.9
+Task 9741053a done in 139.0s — compute 3.8750 KU (€0.0310) — fee 0.8000 KU (€0.0073) — total 4.6750 KU (€0.0383)
+RESULT transformer_xl_base_wt103_bs24 status=completed gpu=NVIDIA GeForce RTX 4090 worker=worker-8a40d7e5 download=2.0s pip=1.2s compute=135.1s total=138.3s queue=1.1s
+VRAM transformer_xl_base_wt103_bs24 device_used=23.3 GB reserved=22.19 GB allocated=17.29 GB context=1.02 GB | forecast 5 GB = x0.21 of device_used
+OUTPUT transformer_xl_base_wt103_bs24 {'vram': {'gpu': 'NVIDIA GeForce RTX 4090', 'total_gb': 47.45, 'context_gb': 1.02, 'allocated_gb': 17.29, 'reserved_gb': 22.19, 'device_used_gb': 23.3, 'run_sec': 130.9}, 'task_output': {'train_throughput': 31893.378130272486}}
+    override transformer_xl_large_wt103_bs8: {'data': 'wikitext-103-v1-smerity'}: the stand's and the account's data source 'wikitext-103-v1' points to the LJSpeech archive, the task reads /data/wikitext-103-v1.zip; a separate source with the archive the task's docstring names (wikitext.smerity.com)
+--- transformer_xl_large_wt103_bs8  forecast 11 GB  bound 24 GB  options {'timeout': 3600, 'data': 'wikitext-103-v1-smerity', 'vram_gb': 22, 'gpu_name': 'RTX 4090', 'stream_stderr': True}
+Waiting for worker...
+Host obtained: RTX 4090, 47GB, (vastai)
+Waiting for provision (up to 2 min)
+Wait time: 2 sec
+Executing on worker-8a40d7e5: RTX 4090, 47GB, (vastai), storage 1498 MB/s, PCIe 24.9 GB/s, net 164 MB/s
+Downloading assets (205 MB), ETA ~1s
+Download complete in 2s (84.5 MB/s)
+building vocab with min_freq=0, max_size=None
+final vocab size 267735 from 267734 unique tokens
+VRAM_PEAK gpu=NVIDIA GeForce RTX 4090 total_gb=47.45 context_gb=1.02 allocated_gb=15.78 reserved_gb=16.59 device_used_gb=17.7 run_sec=150.0
+Task d24353f6 done in 158.0s — compute 4.4125 KU (€0.0353) — fee 0.8000 KU (€0.0073) — total 5.2125 KU (€0.0426)
+RESULT transformer_xl_large_wt103_bs8 status=completed gpu=NVIDIA GeForce RTX 4090 worker=worker-8a40d7e5 download=2.1s pip=1.0s compute=154.4s total=157.6s queue=0.1s
+VRAM transformer_xl_large_wt103_bs8 device_used=17.7 GB reserved=16.59 GB allocated=15.78 GB context=1.02 GB | forecast 11 GB = x0.62 of device_used
+OUTPUT transformer_xl_large_wt103_bs8 {'vram': {'gpu': 'NVIDIA GeForce RTX 4090', 'total_gb': 47.45, 'context_gb': 1.02, 'allocated_gb': 15.78, 'reserved_gb': 16.59, 'device_used_gb': 17.7, 'run_sec': 150.0}, 'task_output': {'train_throughput': 10807.925436395544}}
+    override waveglow_ljs625_bs18: {'pip': ['librosa', 'lazy-loader', 'numba', 'llvmlite', 'msgpack', 'pooch']}: the worker installs packages with --no-deps: librosa / inflect fail to import without their dependencies (lazy_loader, jaraco)
+--- waveglow_ljs625_bs18  forecast 9 GB  bound 24 GB  options {'timeout': 3600, 'data': 'ljspeech-11-dle', 'pip': ['librosa', 'lazy-loader', 'numba', 'llvmlite', 'msgpack', 'pooch'], 'vram_gb': 22, 'gpu_name': 'RTX 4090', 'stream_stderr': True}
+Waiting for worker...
+Host obtained: RTX 4090, 47GB, (vastai)
+Waiting for provision (up to 2 min)
+Wait time: 4 sec
+Executing on worker-8a40d7e5: RTX 4090, 47GB, (vastai), storage 1498 MB/s, PCIe 24.9 GB/s, net 800 MB/s
+Downloading assets (2662 MB), ETA ~3s
+Download complete in 92s (28.5 MB/s)
+VRAM_PEAK gpu=NVIDIA GeForce RTX 4090 total_gb=47.45 context_gb=1.02 allocated_gb=18.13 reserved_gb=19.83 device_used_gb=20.95 run_sec=272.6
+Task 9d008157 done in 380.0s — compute 10.6000 KU (€0.0848) — fee 0.8000 KU (€0.0073) — total 11.4000 KU (€0.0921)
+RESULT waveglow_ljs625_bs18 status=completed gpu=NVIDIA GeForce RTX 4090 worker=worker-8a40d7e5 download=92.0s pip=9.0s compute=278.7s total=379.6s queue=1.1s
+VRAM waveglow_ljs625_bs18 device_used=20.95 GB reserved=19.83 GB allocated=18.13 GB context=1.02 GB | forecast 9 GB = x0.43 of device_used
+OUTPUT waveglow_ljs625_bs18 {'vram': {'gpu': 'NVIDIA GeForce RTX 4090', 'total_gb': 47.45, 'context_gb': 1.02, 'allocated_gb': 18.13, 'reserved_gb': 19.83, 'device_used_gb': 20.95, 'run_sec': 272.6}, 'task_output': {'train_items_per_sec': 174580.68587801827, 'val_loss': 0.002064489720699688}}

@@ -96,7 +96,7 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
         "thresholds": {
             "time_good": scoring.TIME_GOOD, "time_warning": scoring.TIME_WARN,
             "ratio_good": scoring.RATIO_GOOD, "ratio_warning": scoring.RATIO_WARN,
-            "vram_over_warning": scoring.VRAM_OVER_WARN, "params_tolerance": scoring.PARAMS_TOL,
+            "vram_over_warning": scoring.VRAM_OVER_WARN, "vram_bound_far": scoring.VRAM_BOUND_FAR, "params_tolerance": scoring.PARAMS_TOL,
             "field_near": scoring.FIELD_NEAR,
             "fields_good": scoring.FIELDS_GOOD, "fields_warning": scoring.FIELDS_WARN,
         },
@@ -190,8 +190,11 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
             for t in have:
                 b, g = meas(t).get("vram_gb_at_most"), rs[t]["fields"].get("min_vram_gb")
                 if b and g is not None:
+                    # within the bound but below half of it: the bound is far from
+                    # the forecast, so an underestimate is likely (warning)
                     bounds.append({"task": t, "at_most": b, "forecast": g,
-                                   "status": "critical" if g > b else "good"})
+                                   "status": "critical" if g > b
+                                   else "warning" if g < b * scoring.VRAM_BOUND_FAR else "good"})
             if bounds:
                 ms["vram_bound"] = {"above": sum(1 for x in bounds if x["status"] == "critical"),
                                     "n": len(bounds), "tasks": bounds}
@@ -344,6 +347,63 @@ def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]
 
 # --------------------------------------------------------------------- markdown
 
+def _md_ratio(x: dict, unit: str, extra: str) -> list[str]:
+    return ([f"centre x{x['centre']}, typical deviation x{x['typical_deviation']}, {extra}", "",
+             f"| task | measured, {unit} | forecast, {unit} | forecast / measured | status |", "|---|---|---|---|---|"]
+            + [f"| {r['task']} | {r['measured']} | {r['forecast']} | x{r['ratio']} | {r['status']} |" for r in x["tasks"]]
+            + [""])
+
+
+def _md_time(m: dict) -> list[str]:
+    L = []
+    if "anchor_time" in m:
+        x = m["anchor_time"]
+        L += ["##### Compute time on the anchor GPU", "",
+              f"centre x{x['centre']}, typical deviation x{x['typical_deviation']}, "
+              f"within x{TIME_GOOD}: {x['good']}/{x['n']}", "",
+              "| task | GPU | measured, s | forecast, s | forecast / measured | status |", "|---|---|---|---|---|---|"]
+        L += [f"| {r['task']} | {r['gpu']} | {r['measured']} | {r['forecast']} | x{r['ratio']} | {r['status']} |"
+              for r in x["tasks"]]
+        L.append("")
+    if "reference_time" in m:
+        x = m["reference_time"]
+        L += ["##### Reference-card time", ""] + _md_ratio(x, "s", f"inside the issued spread {x['inside_spread']}/{x['n']}")
+    return L
+
+
+def _md_vram(m: dict) -> list[str]:
+    L = []
+    if "vram" in m:
+        x = m["vram"]
+        L += ["##### Measured peak", ""] + _md_ratio(x, "GB", f"below the measured peak {x['below_peak']}/{x['n']}")
+    if "vram_bound" in m:
+        vb = m["vram_bound"]
+        L += ["##### Upper bound", "", f"forecast above the measured bound in {vb['above']}/{vb['n']} tasks"
+              + "".join(f"; {x['task']}: {x['forecast']} GB > {x['at_most']} GB"
+                        for x in vb["tasks"] if x["status"] == "critical"), ""]
+    return L
+
+
+def _md_ladder(m: dict) -> list[str]:
+    L, ld = [], m.get("ladder")
+    if not ld:
+        return L
+    if ld["tasks"]:
+        L += ["##### compute_ratio", "",
+              f"{ld['pairs']} (task, GPU) pairs: typical error x{ld['typical_error']}, p90 x{ld['p90_error']}; "
+              f"median rank correlation {ld['median_rank_corr']}; "
+              f"pick slower than the fastest in {ld['pick_slower']}/{ld['n']} tasks", "",
+              "| task | GPUs | typical error | p90 | rank corr | picked | fastest | time regret | status |",
+              "|---|---|---|---|---|---|---|---|---|"]
+        L += [f"| {x['task']} | {x['gpus']} | x{x['typical_error']} | x{x['p90_error']} | {x['rank_corr']} | "
+              f"{x['pick']} | {x['fastest']} | x{x['time_regret']} | {x['status']} |" for x in ld["tasks"]]
+        L.append("")
+    if ld["uncovered"]:
+        L += ["##### Coverage", "", "measured GPUs without a forecast: " + "; ".join(
+            f"{x['task']} {len(x['missing'])}/{x['measured']}" for x in ld["uncovered"]), ""]
+    return L
+
+
 def render_md(rep: dict) -> str:
     L = []
     for s in rep["services"]:
@@ -356,48 +416,14 @@ def render_md(rep: dict) -> str:
             bad = [t for t, x in v["tasks"].items() if x["status"] != "good"]
             L.append(f"| {f} | {v['match']}/{v['total']} | {', '.join(bad) or '-'} |")
         L.append("")
-        for m in s["measurements"]:
-            L += [f"### Measurements: {m['id']} (independent: {', '.join(map(str, m['independent']))}; "
-                  f"{len(m['tasks'])} tasks)", ""]
-            if "anchor_time" in m:
-                x = m["anchor_time"]
-                L += ["#### Compute time on the anchor GPU", "",
-                      f"centre x{x['centre']}, typical deviation x{x['typical_deviation']}, "
-                      f"within x{TIME_GOOD}: {x['good']}/{x['n']}", "",
-                      "| task | GPU | measured, s | forecast, s | forecast / measured | status |", "|---|---|---|---|---|---|"]
-                L += [f"| {r['task']} | {r['gpu']} | {r['measured']} | {r['forecast']} | x{r['ratio']} | {r['status']} |"
-                      for r in x["tasks"]]
-                L.append("")
-            for key, title, unit in (("reference_time", "Reference-card time", "s"), ("vram", "VRAM", "GB")):
-                if key not in m:
-                    continue
-                x = m[key]
-                extra = (f"inside the issued spread {x['inside_spread']}/{x['n']}" if key == "reference_time"
-                         else f"below the measured peak {x['below_peak']}/{x['n']}")
-                L += [f"#### {title}", "", f"centre x{x['centre']}, typical deviation x{x['typical_deviation']}, {extra}", "",
-                      f"| task | measured, {unit} | forecast, {unit} | forecast / measured | status |", "|---|---|---|---|---|"]
-                L += [f"| {r['task']} | {r['measured']} | {r['forecast']} | x{r['ratio']} | {r['status']} |" for r in x["tasks"]]
-                L.append("")
-            if "vram_bound" in m:
-                vb = m["vram_bound"]
-                L += ["#### VRAM upper bound", "", f"forecast above the measured bound in {vb['above']}/{vb['n']} tasks"
-                      + "".join(f"; {x['task']}: {x['forecast']} GB > {x['at_most']} GB"
-                                for x in vb["tasks"] if x["status"] == "critical"), ""]
-            if "ladder" in m:
-                ld = m["ladder"]
-                if ld["tasks"]:
-                    L += ["#### Ladder (compute_ratio)", "",
-                          f"{ld['pairs']} (task, GPU) pairs: typical error x{ld['typical_error']}, p90 x{ld['p90_error']}; "
-                          f"median rank correlation {ld['median_rank_corr']}; "
-                          f"pick slower than the fastest in {ld['pick_slower']}/{ld['n']} tasks", "",
-                          "| task | GPUs | typical error | p90 | rank corr | picked | fastest | time regret | status |",
-                          "|---|---|---|---|---|---|---|---|---|"]
-                    L += [f"| {x['task']} | {x['gpus']} | x{x['typical_error']} | x{x['p90_error']} | {x['rank_corr']} | "
-                          f"{x['pick']} | {x['fastest']} | x{x['time_regret']} | {x['status']} |" for x in ld["tasks"]]
-                    L.append("")
-                if ld["uncovered"]:
-                    L += ["#### Ladder coverage", "", "measured GPUs without a forecast: " + "; ".join(
-                        f"{x['task']} {len(x['missing'])}/{x['measured']}" for x in ld["uncovered"]), ""]
+        for title, part in (("Time", _md_time), ("VRAM", _md_vram), ("Ladder", _md_ladder)):
+            blocks = [(m, part(m)) for m in s["measurements"]]
+            blocks = [(m, b) for m, b in blocks if b]
+            if blocks:
+                L += [f"### {title}", ""]
+                for m, b in blocks:
+                    L += [f"#### {m['id']} (independent: {', '.join(map(str, m['independent']))}; "
+                          f"{len(m['tasks'])} tasks)", ""] + b
     return "\n".join(L)
 
 
@@ -426,7 +452,7 @@ html[data-theme="dark"],html[data-theme="dark"] body{background:#121211}
 .viz-root{background:var(--surface-0);color:var(--text-primary);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;
 padding:24px 16px 48px;min-height:100vh;box-sizing:border-box}
 .wrap{max-width:1200px;margin:0 auto}
-h1{font-size:22px;margin:0 0 4px} h2{font-size:18px;margin:32px 0 8px} h3{font-size:15px;margin:28px 0 6px}
+h1{font-size:22px;margin:0 0 4px} h2{font-size:18px;margin:32px 0 8px} h3{font-size:16px;margin:32px 0 6px} h4{font-size:14px;margin:20px 0 6px}
 .sub{color:var(--text-secondary);margin:0 0 12px} .muted{color:var(--text-muted);font-weight:400}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin:12px 0 4px}
 .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
@@ -479,6 +505,105 @@ def _ind(flags: list[bool]) -> str:
     return "independent" if flags == [True] else "not independent — service calibration data" if flags == [False] else "mixed"
 
 
+VRAM_NOTE = ('VRAM, GB: the measured peak, or an upper bound (the run completed on a card of that size), '
+             'against the forecast requirement. An upper bound catches over-provisioning beyond the card only; '
+             'it does not check an underestimate.')
+LADDER_NOTE = ('Ladder per GPU: forecast / measured compute_ratio (1.00 = exact; hover for both '
+               'values). An empty cell is a GPU not measured for that task; "vs" names the anchor GPU a '
+               'published measurement is relative to. In the anchor\'s own cell (column marked ◦ anchor): '
+               'forecast / measured time on that card (compute time on the anchor, else the reference-card '
+               'time); it does not enter the ladder errors.')
+
+
+def _html_time(m: dict, th: dict) -> list[str]:
+    P, e = [], html.escape
+    if "reference_time" in m:
+        rt = m["reference_time"]
+        P.append(f'<p class="note">Time on the reference card: centre {_x(rt["centre"])}, typical deviation '
+                 f'{_x(rt["typical_deviation"])}, inside the issued spread {rt["inside_spread"]}/{rt["n"]}.</p>')
+        P.append(_tbl(["task", "measured, s", "forecast, s", "forecast / measured", "status",
+                       "issued spread", "measured inside it"],
+                      [[e(x["task"]), str(x["measured"]), str(x["forecast"]), _x(x["ratio"]), _st(x["status"]),
+                        f"x{x['spread_factor']:.3g}",
+                        _st("good", "yes") if x["inside_spread"] else _st("critical", "no")]
+                       for x in rt["tasks"]], frozenset({1, 2, 3, 5})))
+    if "anchor_time" in m:
+        at = m["anchor_time"]
+        P.append(f'<p class="note">Compute time on the anchor GPU (measured: the work of the task / the '
+                 f'published throughput; forecast: compute time on the reference card x the forecast ratio '
+                 f'of the anchor): centre {_x(at["centre"])}, typical deviation '
+                 f'{_x(at["typical_deviation"])}, within x{th["time_good"]}: {at["good"]}/{at["n"]}.</p>')
+        P.append(_tbl(["task", "GPU", "measured, s", "forecast, s", "forecast / measured", "status"],
+                      [[e(x["task"]), e(x["gpu"]), str(x["measured"]), str(x["forecast"]), _x(x["ratio"]),
+                        _st(x["status"])] for x in at["tasks"]], frozenset({2, 3, 4})))
+    return P
+
+
+def _html_vram(m: dict, th: dict) -> list[str]:
+    P, e = [], html.escape
+    if "vram" in m or "vram_bound" in m:
+        rows = [[e(x["task"]), str(x["measured"]), str(x["forecast"]), _x(x["ratio"]),
+                 _st(x["status"], "below the peak" if x["status"] == "critical"
+                     else "over-provisioned" if x["status"] == "warning" else None)]
+                for x in m.get("vram", {}).get("tasks", [])]
+        rows += [[e(x["task"]), f"≤ {x['at_most']}", str(x["forecast"]), "–",
+                  _st(x["status"], "above the bound" if x["status"] == "critical"
+                      else "far below the bound" if x["status"] == "warning" else "within the bound")]
+                 for x in m.get("vram_bound", {}).get("tasks", [])]
+        P.append(_tbl(["task", "measured", "forecast", "forecast / measured", "status"], rows, frozenset({1, 2, 3})))
+    return P
+
+
+def _html_ladder(m: dict, th: dict) -> list[str]:
+    P, e = [], html.escape
+    if "ladder" in m:
+        ld = m["ladder"]
+        if ld["tasks"]:
+            P.append(f'<p class="note">Ladder: {ld["pairs"]} (task, GPU) pairs, typical error {_x(ld["typical_error"])}, '
+                     f'p90 {_x(ld["p90_error"])}, median rank correlation {ld["median_rank_corr"]}.</p>')
+            P.append(_tbl(["task", "GPUs", "typical error", "p90", "rank corr", "picked as fastest",
+                           "really fastest", "time regret", "status"],
+                          [[e(x["task"]), str(x["gpus"]), _x(x["typical_error"]), _x(x["p90_error"]),
+                            str(x["rank_corr"]), e(x["pick"]), e(x["fastest"]), _x(x["time_regret"]),
+                            _st(x["status"], "slower pick" if x["status"] == "critical"
+                                else "order off" if x["status"] == "warning" else "right pick")]
+                           for x in ld["tasks"]], frozenset({1, 2, 3, 4, 7})))
+        gpus = sorted({g for c in ld["cells"].values() for g in c})
+        body = ""
+        for t, c in ld["cells"].items():
+            tds = []
+            for g in gpus:
+                x = c.get(g)
+                if x is None:
+                    tds.append("<td></td>")
+                elif x["status"] == "anchor":
+                    if x.get("time_ratio") is None:
+                        tds.append(f'<td class="cell none" title="{e(g)}: anchor, no time measured">– none</td>')
+                    else:
+                        st = x["time_status"]
+                        tip = f"{g}: anchor · time forecast / measured"
+                        tds.append(f'<td class="cell {st}" title="{e(tip)}">{_ICON[st]} {x["time_ratio"]:.2f}</td>')
+                elif x["forecast"] is None:
+                    tip = f"{g}: measured {x['measured']} · no forecast"
+                    tds.append(f'<td class="cell none" title="{e(tip)}">– none</td>')
+                else:
+                    r = x["forecast"] / x["measured"]
+                    tip = f"{g}: measured {x['measured']} · forecast {x['forecast']}"
+                    tds.append(f'<td class="cell {x["status"]}" title="{e(tip)}">{_ICON[x["status"]]} {r:.2f}</td>')
+            anchor = ld["anchors"].get(t)
+            label = e(t) + (f' <span class="muted">vs {e(anchor)}</span>' if anchor else "")
+            body += f"<tr><td>{label}</td>{''.join(tds)}</tr>"
+        anchor_gpus = {ld["anchors"].get(t) or REFERENCE_GPU for t in ld["cells"]}
+        head = "".join(f"<th>{e(g)}{'<br>◦ anchor' if g in anchor_gpus else ''}</th>" for g in gpus)
+        P.append(f'<div class="panel"><table><thead><tr><th>task</th>{head}</tr></thead><tbody>{body}</tbody></table></div>')
+        P.append('<div class="legend">' + " ".join(_st(k) for k in ("good", "warning", "critical", "none")) + "</div>")
+        if ld["uncovered"]:
+            P.append('<p class="note">' + _st("critical", "no forecast")
+                     + " measured GPUs the service listed no row for (e.g. filtered out by its VRAM requirement): "
+                     + "; ".join(f"{e(x['task'])} {len(x['missing'])}/{x['measured']}" for x in ld["uncovered"]) + "</p>")
+    return P
+
+
 def render_html(rep: dict) -> str:
     th, e = rep["thresholds"], html.escape
     P = ["<h1>Forecast quality report</h1>",
@@ -486,6 +611,7 @@ def render_html(rep: dict) -> str:
          f'{_st("good")} time within x{th["time_good"]}, ladder ratio within '
          f'x{th["ratio_good"]}, VRAM up to x{th["vram_over_warning"]} above the measured peak · '
          f'{_st("warning")} time within x{th["time_warning"]}, ratio within x{th["ratio_warning"]}, VRAM over-provisioned'
+         + (f' or below {th["vram_bound_far"]:.0%} of an upper bound' if "vram_bound_far" in th else "")
          + (f', a numeric field off by less than {th["field_near"]:.0%}' if "field_near" in th else "")
          + ' · '
          f'{_st("critical")} beyond that, VRAM below the peak (OOM risk) or above a measured bound, '
@@ -518,90 +644,19 @@ def render_html(rep: dict) -> str:
                  'Hover a cell for expected / forecast.</p>')
         P.append(_tbl(["task"] + fnames, rows))
 
-        for m in s["measurements"]:
-            P.append(f"<h3>Measurements: {e(m['id'])} <span class='muted'>· {_ind(m['independent'])} · "
-                     f"{len(m['tasks'])} tasks</span></h3>")
-            if "reference_time" in m:
-                rt = m["reference_time"]
-                P.append(f'<p class="note">Time on the reference card: centre {_x(rt["centre"])}, typical deviation '
-                         f'{_x(rt["typical_deviation"])}, inside the issued spread {rt["inside_spread"]}/{rt["n"]}.</p>')
-                P.append(_tbl(["task", "measured, s", "forecast, s", "forecast / measured", "status",
-                               "issued spread", "measured inside it"],
-                              [[e(x["task"]), str(x["measured"]), str(x["forecast"]), _x(x["ratio"]), _st(x["status"]),
-                                f"x{x['spread_factor']:.3g}",
-                                _st("good", "yes") if x["inside_spread"] else _st("critical", "no")]
-                               for x in rt["tasks"]], frozenset({1, 2, 3, 5})))
-            if "anchor_time" in m:
-                at = m["anchor_time"]
-                P.append(f'<p class="note">Compute time on the anchor GPU (measured: the work of the task / the '
-                         f'published throughput; forecast: compute time on the reference card x the forecast ratio '
-                         f'of the anchor): centre {_x(at["centre"])}, typical deviation '
-                         f'{_x(at["typical_deviation"])}, within x{th["time_good"]}: {at["good"]}/{at["n"]}.</p>')
-                P.append(_tbl(["task", "GPU", "measured, s", "forecast, s", "forecast / measured", "status"],
-                              [[e(x["task"]), e(x["gpu"]), str(x["measured"]), str(x["forecast"]), _x(x["ratio"]),
-                                _st(x["status"])] for x in at["tasks"]], frozenset({2, 3, 4})))
-            if "vram" in m or "vram_bound" in m:
-                rows = [[e(x["task"]), str(x["measured"]), str(x["forecast"]), _x(x["ratio"]),
-                         _st(x["status"], "below the peak" if x["status"] == "critical"
-                             else "over-provisioned" if x["status"] == "warning" else None)]
-                        for x in m.get("vram", {}).get("tasks", [])]
-                rows += [[e(x["task"]), f"≤ {x['at_most']}", str(x["forecast"]), "–",
-                          _st(x["status"], "above the bound" if x["status"] == "critical" else "within the bound")]
-                         for x in m.get("vram_bound", {}).get("tasks", [])]
-                P.append('<p class="note">VRAM, GB: the measured peak, or an upper bound (the run completed on a card of '
-                         'that size), against the forecast requirement. An upper bound catches over-provisioning beyond the card only; '
-                         'it does not check an underestimate.</p>')
-                P.append(_tbl(["task", "measured", "forecast", "forecast / measured", "status"], rows, frozenset({1, 2, 3})))
-            if "ladder" in m:
-                ld = m["ladder"]
-                if ld["tasks"]:
-                    P.append(f'<p class="note">Ladder: {ld["pairs"]} (task, GPU) pairs, typical error {_x(ld["typical_error"])}, '
-                             f'p90 {_x(ld["p90_error"])}, median rank correlation {ld["median_rank_corr"]}.</p>')
-                    P.append(_tbl(["task", "GPUs", "typical error", "p90", "rank corr", "picked as fastest",
-                                   "really fastest", "time regret", "status"],
-                                  [[e(x["task"]), str(x["gpus"]), _x(x["typical_error"]), _x(x["p90_error"]),
-                                    str(x["rank_corr"]), e(x["pick"]), e(x["fastest"]), _x(x["time_regret"]),
-                                    _st(x["status"], "slower pick" if x["status"] == "critical"
-                                        else "order off" if x["status"] == "warning" else "right pick")]
-                                   for x in ld["tasks"]], frozenset({1, 2, 3, 4, 7})))
-                gpus = sorted({g for c in ld["cells"].values() for g in c})
-                body = ""
-                for t, c in ld["cells"].items():
-                    tds = []
-                    for g in gpus:
-                        x = c.get(g)
-                        if x is None:
-                            tds.append("<td></td>")
-                        elif x["status"] == "anchor":
-                            if x.get("time_ratio") is None:
-                                tds.append(f'<td class="cell none" title="{e(g)}: anchor, no time measured">– none</td>')
-                            else:
-                                st = x["time_status"]
-                                tip = f"{g}: anchor · time forecast / measured"
-                                tds.append(f'<td class="cell {st}" title="{e(tip)}">{_ICON[st]} {x["time_ratio"]:.2f}</td>')
-                        elif x["forecast"] is None:
-                            tip = f"{g}: measured {x['measured']} · no forecast"
-                            tds.append(f'<td class="cell none" title="{e(tip)}">– none</td>')
-                        else:
-                            r = x["forecast"] / x["measured"]
-                            tip = f"{g}: measured {x['measured']} · forecast {x['forecast']}"
-                            tds.append(f'<td class="cell {x["status"]}" title="{e(tip)}">{_ICON[x["status"]]} {r:.2f}</td>')
-                    anchor = ld["anchors"].get(t)
-                    label = e(t) + (f' <span class="muted">vs {e(anchor)}</span>' if anchor else "")
-                    body += f"<tr><td>{label}</td>{''.join(tds)}</tr>"
-                anchor_gpus = {ld["anchors"].get(t) or REFERENCE_GPU for t in ld["cells"]}
-                head = "".join(f"<th>{e(g)}{'<br>◦ anchor' if g in anchor_gpus else ''}</th>" for g in gpus)
-                P.append('<p class="note">Ladder per GPU: forecast / measured compute_ratio (1.00 = exact; hover for both '
-                         'values). An empty cell is a GPU not measured for that task; "vs" names the anchor GPU a '
-                         'published measurement is relative to. In the anchor\'s own cell (column marked ◦ anchor): '
-                         'forecast / measured time on that card (compute time on the anchor, else the reference-card '
-                         'time); it does not enter the ladder errors.</p>')
-                P.append(f'<div class="panel"><table><thead><tr><th>task</th>{head}</tr></thead><tbody>{body}</tbody></table></div>')
-                P.append('<div class="legend">' + " ".join(_st(k) for k in ("good", "warning", "critical", "none")) + "</div>")
-                if ld["uncovered"]:
-                    P.append('<p class="note">' + _st("critical", "no forecast")
-                             + " measured GPUs the service listed no row for (e.g. filtered out by its VRAM requirement): "
-                             + "; ".join(f"{e(x['task'])} {len(x['missing'])}/{x['measured']}" for x in ld["uncovered"]) + "</p>")
+        notes = {"VRAM": VRAM_NOTE, "Ladder": LADDER_NOTE}
+        for title, part in (("Time", _html_time), ("VRAM", _html_vram), ("Ladder", _html_ladder)):
+            blocks = [(m, part(m, th)) for m in s["measurements"]]
+            blocks = [(m, b) for m, b in blocks if b]
+            if not blocks:
+                continue
+            P.append(f"<h3>{title}</h3>")
+            if title in notes:
+                P.append(f'<p class="note">{notes[title]}</p>')
+            for m, b in blocks:
+                P.append(f"<h4>{e(m['id'])} <span class='muted'>· {_ind(m['independent'])} · "
+                         f"{len(m['tasks'])} tasks</span></h4>")
+                P += b
     toggle = ('<button class="toggle" type="button" onclick="var r=document.documentElement;'
               "var d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;"
               "r.dataset.theme=d?'light':'dark'\">Light / dark</button>")
