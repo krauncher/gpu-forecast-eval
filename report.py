@@ -423,7 +423,7 @@ def render_md(rep: dict) -> str:
             bad = [t for t, x in v["tasks"].items() if x["status"] != "good"]
             L.append(f"| {f} | {v['match']}/{v['total']} | {', '.join(bad) or '-'} |")
         L.append("")
-        for title, part in (("Time", _md_time), ("VRAM", _md_vram), ("Ladder", _md_ladder)):
+        for title, part in (("VRAM", _md_vram), ("Time", _md_time), ("Ladder", _md_ladder)):
             blocks = [(m, part(m)) for m in s["measurements"]]
             blocks = [(m, b) for m, b in blocks if b]
             if blocks:
@@ -672,7 +672,7 @@ def render_html(rep: dict) -> str:
         P.append(_tbl(["task"] + fnames, rows))
 
         notes = {"VRAM": VRAM_NOTE, "Ladder": LADDER_NOTE}
-        for title, part in (("Time", _html_time), ("VRAM", _html_vram), ("Ladder", _html_ladder)):
+        for title, part in (("VRAM", _html_vram), ("Time", _html_time), ("Ladder", _html_ladder)):
             blocks = [(m, part(m, th)) for m in s["measurements"]]
             blocks = [(m, b) for m, b in blocks if b]
             if not blocks:
