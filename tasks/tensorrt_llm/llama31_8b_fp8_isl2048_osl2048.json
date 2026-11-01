@@ -1,0 +1,40 @@
+{
+  "task": "tensorrt_llm/llama31_8b_fp8_isl2048_osl2048",
+  "fields": {
+    "workload_type": "llm_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "inference_engine": "tensorrt_llm",
+    "precision": "fp8",
+    "params_billions": 8.0,
+    "batch_size": null,
+    "dataset_samples": 1500,
+    "seq_len": 4096,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-10-23 (batch_size: none \u2014 the engine schedules the batch of each step (continuous batching) from the requests it holds, bounded by the KV cache and max_batch_size; the code does not set it. dataset_samples: the requests passed to generate(); seq_len: ISL + OSL)"
+  },
+  "measurements": [
+    {
+      "id": "trtllm-perf-overview-v0.21",
+      "independent": true,
+      "source": "NVIDIA, github.com/NVIDIA/TensorRT-LLM, commit 0c9430e (2025-09-15), docs/source/performance/perf-overview.md, table 'Llama 3.1 8B FP8', ISL 2048 / OSL 2048, TP 1, 'Total Output Throughput (tokens/sec)': H100 9,462.43; H200 11,822.14; GH200 10,767.05",
+      "date": "page generated from commit 0c9430e, 2025-09-15; v0.21 benchmarks",
+      "hardware": "H100 SXM 80GB (DGX H100), H200 SXM 141GB (DGX H200), GH200 96GB HBM3 (480GB LPDDR5X); TensorRT-LLM v0.21, PyTorch backend; host software versions not stated",
+      "anchor_gpu": "h100_sxm",
+      "anchor_compute_sec": 324.7,
+      "anchor_compute_sec_note": "output work / published throughput on H100: 1500 requests x 2048 output tokens = 3,072,000 tokens / 9,462.43 tokens/s; external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23)",
+      "compute_ratio": {
+        "h100_sxm": 1.0,
+        "h200": 0.8,
+        "gh200": 0.879
+      },
+      "compute_ratio_note": "throughput[H100] / throughput[GPU], same ISL/OSL and TP; gh200 as named by the analyzer",
+      "vram_gb_at_most": 80,
+      "vram_gb_at_most_note": "the run completed on H100 SXM 80GB (TP 1); the KV cache takes 0.90-0.95 of the memory left after the model (--kv_cache_free_gpu_mem_fraction, perf-overview.md:262), so the peak follows the card, not the task; this bound does not check an underestimate",
+      "engine_version_note": "version and settings gap, not a defect of the forecast: this measurement is TensorRT-LLM v0.21 trtllm-bench with its tuned engine settings (bench/build/tuning.py at 0c9430e); the analyzer's engine table and the Krauncher runs are TensorRT-LLM 1.3.0rc24 through the LLM API with its defaults (max_batch_size 2048, max_num_tokens 8192, free_gpu_memory_fraction 0.9). Recorded 2026-11-01",
+      "added_note": "added 2026-11-01"
+    }
+  ]
+}
