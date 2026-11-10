@@ -3,6 +3,7 @@ and the GPU ladder, read into the stand's fields."""
 
 import subprocess
 import time
+import httpx
 import krauncher
 from datetime import datetime, timezone
 from pathlib import Path
@@ -79,8 +80,15 @@ class KrauncherAdapter(ServiceInterface):
         _ensure_data_sources(client, getattr(mod, "DATA_SOURCES", []))
         handle = await client.task(**mod.OPTIONS)(mod.FUNC)(**mod.KWARGS)
         t0 = time.monotonic()
-        assay = await client.analyzer().assay(handle.classification.analyzer_job_id)
-        ladder = await client.ladder(assay)
+        job_id = handle.classification.analyzer_job_id
+        analyzer = client.analyzer()
+        # Stand fields read assay/1 (still served at /jobs/{id}/assay); the
+        # ladder comes from the assay/2 path, its ladder/3 rows match ladder/2.
+        async with httpx.AsyncClient(timeout=30) as http:
+            r = await http.get(f"{analyzer._url}/jobs/{job_id}/assay", headers=analyzer._headers)
+            r.raise_for_status()
+            assay = r.json()
+        ladder = (await client.ladder(await analyzer.assay(job_id)))["ladder"]
         t_assay_ladder = time.monotonic() - t0
         return Forecast(
             service=self.name,
