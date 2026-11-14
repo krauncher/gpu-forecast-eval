@@ -9,7 +9,7 @@ task's description (tasks/<source>/<task>.json). Levels:
 1. classification / assay fields — match per field;
 2. reference-card time — forecast / reference per task: centre (geomean),
    typical deviation (median |log|), share inside the issued spread;
-3. VRAM — forecast / measured peak; forecasts below the peak (an OOM risk);
+3. VRAM — forecast / measured peak; forecasts more than 5 % below the peak (an OOM risk);
    forecasts above a measured upper bound (`vram_gb_at_most`);
 4. ladder — compute_ratio per GPU: error (median and p90 of |log|), card order
    (Spearman), time regret of the GPU the forecast calls fastest; measured
@@ -184,7 +184,7 @@ def analyze(results: dict, descs: dict, measurement: str | None = None) -> dict:
             if rows:
                 ms["vram"] = {"centre": _r(_gm([x["ratio"] for x in rows])),
                               "typical_deviation": _typ([x["ratio"] for x in rows]),
-                              "below_peak": sum(1 for x in rows if x["forecast"] < x["measured"]),
+                              "below_peak": sum(1 for x in rows if x["forecast"] < x["measured"] * scoring.VRAM_BELOW),
                               "close": sum(1 for x in rows if scoring.VRAM_CLOSE[0] <= x["ratio"] <= scoring.VRAM_CLOSE[1]),
                               "n": len(rows), "tasks": rows}
             bounds = []
@@ -311,7 +311,7 @@ def headline_tiles(svc: dict, th: dict) -> list[tuple[str, str, str, str | None]
                     _band(typ, th["time_good"], th["time_warning"])))
     vr = rows("vram")
     if vr:
-        below = sum(1 for x in vr if x["forecast"] < x["measured"])
+        below = sum(1 for x in vr if x["forecast"] < x["measured"] * scoring.VRAM_BELOW)
         out.append(("VRAM below the measured peak", f"{below}/{len(vr)}",
                     f"centre {_x(_r(_gm([x['ratio'] for x in vr])))}", "good" if below == 0 else "critical"))
         lo, hi = scoring.VRAM_CLOSE
@@ -382,7 +382,7 @@ def _md_vram(m: dict) -> list[str]:
     if "vram" in m:
         x = m["vram"]
         close = f", close to it (x{scoring.VRAM_CLOSE[0]:.2f}-{scoring.VRAM_CLOSE[1]:.2f}) {x['close']}/{x['n']}" if "close" in x else ""
-        L += ["##### Measured peak", ""] + _md_ratio(x, "GB", f"below the measured peak {x['below_peak']}/{x['n']}{close}")
+        L += ["##### Measured peak", ""] + _md_ratio(x, "GB", f"below the measured peak (x{scoring.VRAM_BELOW:.2f}) {x['below_peak']}/{x['n']}{close}")
     if "vram_bound" in m:
         vb = m["vram_bound"]
         L += ["##### Upper bound", "", f"forecast above the measured bound in {vb['above']}/{vb['n']} tasks"
