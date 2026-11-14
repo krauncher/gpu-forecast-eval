@@ -1,0 +1,37 @@
+{
+  "task": "runcrate/sdxl_fp16_bs1",
+  "fields": {
+    "workload_type": "diffusion_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "inference_engine": "diffusers",
+    "precision": "fp16",
+    "params_billions": 2.6,
+    "batch_size": 1,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-11-14 (params_billions: the SDXL UNet, 2.57 B; text encoders and VAE not counted); inference_engine diffusers: StableDiffusionXLPipeline"
+  },
+  "measurements": [
+    {
+      "id": "runcrate-sdxl-four-gpus",
+      "independent": true,
+      "source": "Runcrate, dev.to/runcrate/sdxl-images-per-dollar-on-four-gpus-rtx-a6000-l40s-rtx-5090-and-h100-eager-vs-torchcompile-16no (posted 2026-10-27, edited 2026-11-04), rows 'eager, batch 1', seconds per image: RTX A6000 5.79, L40S 3.48, RTX 5090 2.77, H100 PCIe 2.25",
+      "date": "2026-10-27",
+      "hardware": "'RTX A6000' (48 GB), 'L40S' (48 GB), 'RTX 5090' (32 GB), 'H100 PCIe' (80 GB), rented; diffusers 0.42.1, torch 2.8.0+cu128; one run per GPU",
+      "anchor_gpu": "l40s",
+      "anchor_compute_sec": 3.48,
+      "anchor_compute_sec_note": "seconds per image over 8 timed images after a warm-up; published time taken as the compute time: external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23)",
+      "compute_ratio": {
+        "l40s": 1.0,
+        "rtx_a6000": 1.664,
+        "rtx_5090": 0.796,
+        "h100_pcie": 0.647
+      },
+      "compute_ratio_note": "time[card] / time[L40S] from the table; the source treats differences under about 5 % as noise",
+      "min_vram_gb": 9.0,
+      "min_vram_gb_note": "published 'Peak VRAM' 9.0 GB at batch 1 (measurement method and GB / GiB not stated)"
+    }
+  ]
+}
