@@ -1,0 +1,35 @@
+{
+  "task": "lambdalabs/resnet50_fp32_bs1664",
+  "fields": {
+    "workload_type": "cv_training",
+    "mode": "training",
+    "framework": "pytorch",
+    "inference_engine": null,
+    "precision": "fp32",
+    "params_billions": 0.0256,
+    "batch_size": 1664,
+    "epochs": 2,
+    "steps": 200,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-11-12 (synthetic data: dataset_samples not stated)"
+  },
+  "measurements": [
+    {
+      "id": "lambda-dlb-v2-fp32",
+      "independent": true,
+      "source": "Lambda, github.com/lambdal/deeplearning-benchmark, branch master as fetched on 2026-11-12, pytorch/pytorch-train-throughput-v2-fp32.csv, column resnet50 (training throughput, images/s; parsed from the 'Summary: train.loss' log line by scripts/compile_results_pytorch_v2.py), single-GPU rows: 'LambdaOD_test_1xB200_192GB_129-213-83-251_v2' 2967.0; batch 1664, --epochs 2 --prof 100 from pytorch/scripts/config_v2/config_pytorch_192GB.sh (via config_pytorch_1xB200_192GB_v2.sh)",
+      "date": "measurement dates are not in the CSV; fetched 2026-11-12",
+      "hardware": "Lambda's systems as named in the rows; NGC container nvcr.io/nvidia/pytorch:24.10-py3 (pytorch/README.md), LambdaLabsML/DeepLearningExamples branch lambda/benchmark",
+      "anchor_gpu": "b200",
+      "anchor_compute_sec": 112.2,
+      "anchor_compute_sec_note": "training work / published throughput: 2 epochs x 100 iterations x batch 1664 = 332800 images; / 2967.0 images/s (rows pooled by geometric mean)",
+      "compute_ratio": {
+        "b200": 1.0
+      },
+      "vram_gb_at_most": 192,
+      "vram_gb_at_most_note": "the run completed with batch 1664 on a 192 GB card, so the peak is at most 192 GB; this bound does not check an underestimate"
+    }
+  ]
+}

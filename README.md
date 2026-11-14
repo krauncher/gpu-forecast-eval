@@ -114,6 +114,17 @@ Published benchmarks (`tasks/<source>/`, independent measurements):
 | `lambdalabs/resnet50_amp_bs1280` | ResNet-50 training, AMP, batch 1280, synthetic data; Lambda GPU benchmark (A100 / H100 80 GB) |
 | `lambdalabs/resnet50_amp_bs928` | ResNet-50 training, AMP, batch 928, synthetic data; Lambda GPU benchmark (RTX 6000 Ada, RTX A6000, Quadro RTX 8000, 48 GB) |
 | `lambdalabs/resnet50_amp_bs448` | ResNet-50 training, AMP, batch 448, synthetic data; Lambda GPU benchmark (RTX 4090, RTX 3090, A10, 24 GB) |
+| `lambdalabs/resnet50_fp32_bs224` | ResNet-50 training, fp32, batch 224, synthetic data; Lambda GPU benchmark (RTX 4090, RTX 3090, A10, 24 GB) |
+| `lambdalabs/resnet50_fp32_bs496` | ResNet-50 training, fp32, batch 496, synthetic data; Lambda GPU benchmark (RTX 6000 Ada, RTX A6000, 48 GB) |
+| `lambdalabs/resnet50_fp32_bs640` | ResNet-50 training, fp32, batch 640, synthetic data; Lambda GPU benchmark (A100 / H100 80 GB) |
+| `lambdalabs/resnet50_amp_bs720` | ResNet-50 training, AMP, batch 720, synthetic data; Lambda GPU benchmark (A100 40GB PCIe) |
+| `lambdalabs/resnet50_amp_bs2560` | ResNet-50 training, AMP, batch 2560, synthetic data; Lambda GPU benchmark v2, NGC 24.10 (H200 141 GB) |
+| `lambdalabs/resnet50_amp_bs1360` | ResNet-50 training, AMP, batch 1360, synthetic data; Lambda GPU benchmark v2, NGC 24.10 (GH200 96 GB) |
+| `lambdalabs/resnet50_amp_bs3328` | ResNet-50 training, AMP, batch 3328, synthetic data; Lambda GPU benchmark v2, NGC 24.10 (B200 192 GB) |
+| `lambdalabs/resnet50_fp32_bs1280` | ResNet-50 training, fp32, batch 1280, synthetic data; Lambda GPU benchmark v2, NGC 24.10 (H200 141 GB) |
+| `lambdalabs/resnet50_fp32_bs720` | ResNet-50 training, fp32, batch 720, synthetic data; Lambda GPU benchmark v2, NGC 24.10 (GH200 96 GB) |
+| `lambdalabs/resnet50_fp32_bs1664` | ResNet-50 training, fp32, batch 1664, synthetic data; Lambda GPU benchmark v2, NGC 24.10 (B200 192 GB) |
+| `timm/resnet152_amp_bs192` | ResNet-152 training step benchmark, AMP, batch 192, synthetic input; timm benchmark.py results (RTX 3090) |
 | `lambdalabs/bert_base_squad_amp_bs320` | BERT-base fine-tuning on SQuAD v1.1, mixed precision, batch 320, 101 steps; Lambda GPU benchmark (A100 / H100 80 GB) |
 | `lambdalabs/bert_base_squad_amp_bs192` | BERT-base fine-tuning on SQuAD v1.1, mixed precision, batch 192, 101 steps; Lambda GPU benchmark (RTX 6000 Ada, RTX A6000, Quadro RTX 8000, 48 GB) |
 | `lambdalabs/bert_base_squad_amp_bs96` | BERT-base fine-tuning on SQuAD v1.1, mixed precision, batch 96, 101 steps; Lambda GPU benchmark (RTX 4090, RTX 3090, 24 GB) |

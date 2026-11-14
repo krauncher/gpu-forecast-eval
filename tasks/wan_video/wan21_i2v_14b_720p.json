@@ -29,7 +29,7 @@
       },
       "compute_ratio_note": "time[H800/H100] / time[A800/A100] = 1491.6 / 2715.5. 'A800/A100' and 'H800/H100' taken as the 80 GB SXM cards (not stated). H20 (5494.8 s) not in the ratios: not among the analyzer's GPUs",
       "min_vram_gb": 76.7,
-      "min_vram_gb_note": "published peak GPU memory, 'GB' as in the table (GB or GiB not stated), with --offload_model True"
+      "min_vram_gb_note": "published peak GPU memory, 'GB' as in the table (GB or GiB not stated), with --offload_model True Hypothesis, not checked: the table's GB are GiB (2^30 bytes). Read as GiB, the Wan2.2 T2V-A14B peaks 59.8 / 41.3 = 64.2 / 44.3 GB equal the meta-device count of the official code's tensors at the peak (64.0 / 44.2 GB: one bf16 expert, Wan2.1 VAE, DiT activations; the analyzer's memory model, 2026-11-14) to 0.3 %; the repository has no memory-reporting code that would state the unit."
     }
   ]
 }

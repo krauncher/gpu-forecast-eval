@@ -1,0 +1,37 @@
+{
+  "task": "lambdalabs/resnet50_fp32_bs496",
+  "fields": {
+    "workload_type": "cv_training",
+    "mode": "training",
+    "framework": "pytorch",
+    "inference_engine": null,
+    "precision": "fp32",
+    "params_billions": 0.0256,
+    "batch_size": 496,
+    "epochs": 1,
+    "steps": 50,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-11-12 (synthetic data: dataset_samples not stated)"
+  },
+  "measurements": [
+    {
+      "id": "lambda-dlb-v1-fp32",
+      "independent": true,
+      "source": "Lambda, github.com/lambdal/deeplearning-benchmark, commit aa5addb6 (2025-12-17), pytorch/pytorch-train-throughput-fp32.csv, column resnet50 (training throughput, images/s), single-GPU rows run with batch 496 (pytorch/pytorch-train-bs-fp32.csv): 'RTX 6000 Ada' 647; 'RTX A6000' 514 (Quadro RTX 8000 274, Turing, left out)",
+      "date": "measurement dates are not in the CSV; repository snapshot 2025-12-17",
+      "hardware": "Lambda's systems as named in the rows; NVIDIA NGC PyTorch container (version not recorded per row), LambdaLabsML/DeepLearningExamples branch lambda/benchmark",
+      "anchor_gpu": "rtx_6000_ada",
+      "anchor_compute_sec": 38.3,
+      "anchor_compute_sec_note": "training work / published throughput of the anchor: 1 epochs x 50 iterations x batch 496 = 24800 images; / 647.0 images/s. The benchmark's throughput covers the training steps: start-up and validation are outside it",
+      "compute_ratio": {
+        "rtx_6000_ada": 1.0,
+        "rtx_a6000": 1.259
+      },
+      "compute_ratio_note": "throughput[anchor] / throughput[GPU]; rows of one GPU (different hosts) pooled by geometric mean",
+      "vram_gb_at_most": 48,
+      "vram_gb_at_most_note": "the run completed with batch 496 on 48 GB cards, so the peak is at most 48 GB; Lambda's batch sizes grow with card memory, so the peak is likely close to the card size; this bound does not check an underestimate"
+    }
+  ]
+}

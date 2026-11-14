@@ -1,0 +1,35 @@
+{
+  "task": "wan_video/wan22_t2v_a14b_480p",
+  "fields": {
+    "workload_type": "diffusion_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "inference_engine": null,
+    "precision": "bf16",
+    "params_billions": 14,
+    "batch_size": 1,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-11-12 (params_billions: one expert of Wan2.2 T2V-A14B (14B, the Wan2.1 14B DiT); one expert runs per step and one is on the GPU at a time (text2video.py:169-201 at 1ea34ff); the umt5-xxl text encoder is not counted; precision bf16 is set by the Wan2.2 library: param_dtype = torch.bfloat16 (wan/configs/shared_config.py:14), the DiT under torch.amp.autocast(dtype=param_dtype) (text2video.py:301), its weights cast to bf16 by convert_model_dtype=True (text2video.py:162-163)); inference_engine none: the model runs in the Wan2.2 repository's own PyTorch code, no inference library"
+  },
+  "measurements": [
+    {
+      "id": "wan22-readme-comp-effic",
+      "independent": true,
+      "source": "Wan team, github.com/Wan-Video/Wan2.2, commit 1ea34ff (2026-09-21), README.md 'Computational Efficiency on Different GPUs' (lines 426-440), assets/comp_effic.png, T2V-A14B 480P, 1 GPU: A100/A800 785.7 / 41.3; H100/H800 326.9 / 41.3; H20 1133.9 / 41.3",
+      "date": "not stated; table in the repository at 1ea34ff",
+      "hardware": "GPUs named as '4090', 'H20', 'A100/A800', 'H100/H800'; form factor, host and software versions not stated; 'Reported results are the average of multiple samples taken after the warm-up phase' (README.md:440); FlashAttention3 on Hopper (:438); settings: --offload_model True --convert_model_dtype, no prompt extension",
+      "anchor_gpu": "a100_sxm_80",
+      "anchor_compute_sec": 785.7,
+      "anchor_compute_sec_note": "published total time, published time taken as the compute time: external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23)",
+      "compute_ratio": {
+        "a100_sxm_80": 1.0,
+        "h100_sxm": 0.416
+      },
+      "compute_ratio_note": "time[H100/H800] / time[A100/A800]; 'A100/A800' and 'H100/H800' taken as the 80 GB SXM cards (not stated). H20 not in the ratios: not among the analyzer's GPUs",
+      "min_vram_gb": 41.3,
+      "min_vram_gb_note": "published peak GPU memory, 'GB' as in the table (GB or GiB not stated), with --offload_model True --convert_model_dtype Hypothesis, not checked: the table's GB are GiB (2^30 bytes). Read as GiB, the Wan2.2 T2V-A14B peaks 59.8 / 41.3 = 64.2 / 44.3 GB equal the meta-device count of the official code's tensors at the peak (64.0 / 44.2 GB: one bf16 expert, Wan2.1 VAE, DiT activations; the analyzer's memory model, 2026-11-14) to 0.3 %; the repository has no memory-reporting code that would state the unit."
+    }
+  ]
+}

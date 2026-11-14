@@ -1,0 +1,37 @@
+{
+  "task": "cogvideo/cogvideox15_5b_t2v",
+  "fields": {
+    "workload_type": "diffusion_inference",
+    "mode": "inference",
+    "framework": "pytorch",
+    "inference_engine": "diffusers",
+    "precision": "bf16",
+    "params_billions": 5,
+    "batch_size": 1,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-11-12 (params_billions: the CogVideoX1.5-5B transformer; the T5 text encoder not counted); inference_engine diffusers: the model runs through diffusers' CogVideoXPipeline"
+  },
+  "measurements": [
+    {
+      "id": "cogvideo-readme",
+      "independent": true,
+      "source": "THUDM, github.com/THUDM/CogVideo, commit 7a1af71 (2025-11-04), README.md model table, 'Inference Speed (Step = 50, FP/BF16)', CogVideoX1.5-5B column: 'Single A100: ~1000 seconds (5-second video)', 'Single H100: ~550 seconds (5-second video)'; tested with diffusers and all its memory optimisations (enable_sequential_cpu_offload, vae.enable_slicing, vae.enable_tiling; 'The inference speed tests also used the above memory optimization scheme')",
+      "date": "not stated; table in the repository at 7a1af71",
+      "hardware": "'Single A100', 'Single H100'; memory size, form factor, host and software versions not stated",
+      "anchor_gpu": "a100_sxm_80",
+      "anchor_compute_sec": 1000,
+      "anchor_compute_sec_note": "published time on A100 (rounded), published time taken as the compute time: external sources are treated as pure compute time, as benchmarks are usually profiled (stand convention, 2026-10-23)",
+      "compute_ratio": {
+        "a100_sxm_80": 1.0,
+        "h100_sxm": 0.55
+      },
+      "compute_ratio_note": "time[H100] / time[A100] = ~550 / ~1000; both values rounded in the source. 'A100' and 'H100' taken as the 80 GB SXM cards (not stated)",
+      "vram_gb_at_most": 80,
+      "vram_gb_at_most_note": "the run completed on single A100 and H100 (80 GB)",
+      "min_vram_gb": 10,
+      "min_vram_gb_note": "README.md CogVideoX1.5-5B column, 'diffusers BF16: from 10GB*', with all diffusers optimisations enabled, as in this task; 'GB' as published (GB or GiB not stated)"
+    }
+  ]
+}

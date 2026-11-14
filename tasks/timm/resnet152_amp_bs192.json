@@ -1,0 +1,35 @@
+{
+  "task": "timm/resnet152_amp_bs192",
+  "fields": {
+    "workload_type": "cv_training",
+    "mode": "training",
+    "framework": "pytorch",
+    "inference_engine": null,
+    "precision": "fp16",
+    "params_billions": 0.0602,
+    "batch_size": 192,
+    "epochs": null,
+    "steps": 40,
+    "cpu_only": false
+  },
+  "sources": {
+    "classification": "labelled from the task code, 2026-11-12 (synthetic data: dataset_samples not stated)"
+  },
+  "measurements": [
+    {
+      "id": "timm-bench-train-rtx3090-amp",
+      "independent": true,
+      "source": "huggingface/pytorch-image-models, results/benchmark-train-amp-nchw-pt112-cu113-rtx3090.csv, row resnet152: train_samples_per_sec 370.08, train_step_time 516.516 ms, train_batch_size 192, train_img_size 224",
+      "date": "not stated in the file; PyTorch 1.12 / CUDA 11.3 by the file name",
+      "hardware": "RTX 3090 (host not stated)",
+      "anchor_gpu": "rtx_3090",
+      "anchor_compute_sec": 20.8,
+      "anchor_compute_sec_note": "40 timed steps x batch 192 = 7680 images / 370.08 images/s (wall-clock throughput of the timed steps)",
+      "compute_ratio": {
+        "rtx_3090": 1.0
+      },
+      "vram_gb_at_most": 24,
+      "vram_gb_at_most_note": "batch 192 ran after batch 256 failed (the benchmark decays the batch on OOM), so the peak at 192 is at most 24 GB and likely close to it"
+    }
+  ]
+}
