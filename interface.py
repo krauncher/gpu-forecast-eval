@@ -2,7 +2,7 @@
 
 The same scheme as the GPU-provider adapters of Krauncher: each adapter hides one service's request
 format and answer behind these methods, and the stand handles every service
-alike. See doc/extension_plan.md.
+alike.
 """
 
 import json

@@ -1,7 +1,7 @@
 # gpu-forecast-eval
 
 Test stand for independent validation of krauncher forecasts. For each task
-it records, before anything runs, the analyzer's assay v1 (the passport: the
+it records, before anything runs, the analyzer's assay (the passport: the
 work on the reference card) and the GPU ladder (each GPU's compute coefficient
 against the reference card), stamped with the UTC time and the analyzer
 `calibration_id`, and compares both with the task's reference values.
@@ -51,7 +51,7 @@ One task:
     .venv/bin/python run.py krauncher_tutorials/bert_imdb
 
 `--service <name>` picks the service under test (default `krauncher`; the
-services are adapters in `adapters/`, see `doc/extension_plan.md`).
+services are adapters in `adapters/`, see `interface.py`).
 
 All tasks:
 
@@ -85,7 +85,9 @@ latest result of every task, per service:
 forecast time
 (request to normalised forecast, measured by the stand), classification /
 assay fields (match per field), reference-card time (centre, typical
-deviation, inside the issued spread), compute time on a set's anchor GPU,
+deviation, inside the issued spread), compute time on a set's anchor GPU (the GPU's own time: the compute phase
+without the host part of the calls, which is the same on every card — what
+published benchmarks time),
 VRAM (centre, forecasts below the
 measured peak) and the ladder (error per GPU, rank correlation of the card
 order, time regret of the GPU picked as fastest).
@@ -149,6 +151,12 @@ Published benchmarks (`tasks/<source>/`, independent measurements):
 | `wan_video/wan21_t2v_14b_720p`, `wan21_i2v_14b_720p` | Wan2.1 text- / image-to-video 14B, 720p; Wan2.1 README efficiency table (A100, H100) |
 | `wan_video/wan21_t2v_1_3b_480p` | Wan2.1 text-to-video 1.3B, 480p, one RTX 4090; the same table |
 | `cogvideo/cogvideox_5b_t2v` | CogVideoX-5B text-to-video, 720x480, 49 frames, 50 steps, BF16, diffusers; THUDM/CogVideo README (A100, H100) |
+| `cogvideo/cogvideox_2b_t2v`, `cogvideox15_5b_t2v` | CogVideoX-2B (FP16) and CogVideoX1.5-5B (BF16) text-to-video, diffusers; the same README (A100, H100) |
+| `tensorrt_llm/llama31_8b_fp8_isl128_osl128`, `_isl128_osl4096`, `_isl500_osl2000`, `_isl1000_osl2000`, `_isl2048_osl2048`, `_isl5000_osl500`, `_isl20000_osl2000` | the same TensorRT-LLM offline throughput, Llama 3.1 8B FP8, TP 1, further ISL/OSL rows of the perf overview (H100, H200, GH200) |
+| `wan_video/wan22_t2v_a14b_480p`, `wan22_t2v_a14b_720p` | Wan2.2 text-to-video A14B, 480p / 720p; Wan2.2 README efficiency table (A100, H100) |
+| `wan_video/wan22_ti2v_5b_t2v_720p` | Wan2.2 TI2V-5B text-to-video, 720p, one RTX 4090; the same table |
+| `pytorch_blog/sdxl_bf16_a100` | SDXL text-to-image, BF16, SDPA; PyTorch blog "Accelerating Generative AI Part III: Diffusion, Fast" (A100 80 GB) |
+| `runcrate/sdxl_fp16_bs1` | SDXL text-to-image, FP16, eager, batch 1; Runcrate "SDXL images per dollar on four GPUs" (RTX A6000, L40S, RTX 5090, H100 PCIe) |
 
 ## Adding a task
 

@@ -58,7 +58,7 @@ the forecast predates the runs it is compared with. Run again for a new one.
 
 Report over all tasks: `.venv/bin/python report.py [--service <name>] [--version <id>] [--out DIR]`
 → `report.json`, `report.md`, `report.html` (latest result per task; comparison rules and
-status thresholds in `scoring.py`, shared with `run.py`). `demo/` holds a committed example run.
+status thresholds in `scoring.py`, shared with `run.py`).
 
 Errors:
 
@@ -77,7 +77,7 @@ A service under test is an adapter in `adapters/` implementing
 `ServiceInterface` (`interface.py`): `name`, `capabilities()` (the stand
 fields it answers) and `forecast(task)` (its pre-run forecast, normalised to
 a `Forecast`, `models.py`). `adapters/__init__.py` registers adapters by name
-for `run.py --service`. Plan: `doc/extension_plan.md`.
+for `run.py --service`.
 
 ## Wrapping your own example as a task
 
@@ -182,8 +182,8 @@ measured values:
 | `fields`: `workload_type`, `mode`, `framework`, `inference_engine`, `precision`, `params_billions`, `batch_size`, `epochs`, `steps`, `dataset_samples`, `seq_len`, `cpu_only` | `assay.workload` (`steps`: `assay.work.steps`) / `assay.requirements.cpu_only`; ok / DIFF (`params_billions` within ±25 %, no precision = fp32); a numeric value off by < 10 % is a warning, not a match | read from the task code: what the task is, not what any service answers. Meanings and the provenance of `steps` / `dataset_samples`: `doc/reference_values.md` |
 | `reference_sec` | `assay.work.reference_sec` | whole task, seconds, on RTX PRO 6000 Blackwell |
 | `min_vram_gb` | `assay.requirements.min_vram_gb` | peak VRAM of the run, GB |
-| `compute_ratio` | ladder `compute_ratio` per `gpu_id` | compute on the GPU / compute on the reference card, where compute = whole task − download − setup |
-| `anchor_compute_sec` | the compute phase on `anchor_gpu` (from `reference_sec` and the ladder) | compute time on the anchor GPU, e.g. work / published throughput |
+| `compute_ratio` | ladder `compute_ratio` per `gpu_id`, on the GPU's own part (the host part of the calls, compute phase − `work.gpu_sec`, is flat across cards) | the GPU's own time on the GPU / on the reference card, without download, setup, warm-up and the host part |
+| `anchor_compute_sec` | the GPU's own time on `anchor_gpu` (from `work.gpu_sec` and the ladder) | compute time on the anchor GPU, e.g. work / published throughput |
 | `vram_gb_at_most` | `assay.requirements.min_vram_gb` | an upper bound: the run completed on a card of that memory |
 
 A task can carry several measurement sets (own runs, published results, a
@@ -234,7 +234,7 @@ calibration runs (the data the analyzer is calibrated on, so not an independent
 check): `bert_imdb`, `qwen25_7b_lora_alpaca`, `qwen25_7b_gsm8k`,
 `qwen25_7b_batched`, `qwen25_7b_long`, `phi3_inference`, `qwen15_inference`,
 `bert_batch_inference`, `vit_batch_inference`, `resnet152_food101`. Use them as
-templates. Tasks with independent published measurements (Lambda, TensorRT-LLM,
-Wan2.1, CogVideoX) are listed in README.md.
+templates. Tasks with independent published measurements (Lambda, timm, TensorRT-LLM,
+Wan2.1 / Wan2.2, CogVideoX, SDXL) are listed in README.md.
 
 Do not commit `.env`, `.venv/` or `client/`.

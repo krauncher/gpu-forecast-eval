@@ -4,3 +4,4 @@ client/
 __pycache__/
 results/*
 !results/.gitkeep
+.*_token
