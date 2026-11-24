@@ -40,6 +40,13 @@ def _ensure_data_sources(client: KrauncherClient, sources: list[dict]) -> None:
 def stand_fields(assay: dict, ladder: dict) -> dict:
     """Assay v1 + ladder/2 -> stand fields."""
     wl, model, knobs = assay["workload"], assay["workload"]["model"], assay["workload"]["knobs"]
+    w = assay["work"]
+    # the compute phase on the reference card (setup, downloads and the warm-up
+    # floor are other phases) and its host part (compute phase - gpu_sec): the
+    # stand compares the GPU's own time, as published benchmarks measure it
+    c = w["reference_sec"] * w["phases_cu"]["compute"] / w["reference_cu"]
+    # gpu_sec comes in 0.1 s: a task shorter than that keeps its whole compute phase
+    h = max(0.0, c - (w["gpu_sec"] if w.get("gpu_sec") else c))
     return {
         "workload_type": wl["type"],
         "mode": wl["mode"],
@@ -57,12 +64,11 @@ def stand_fields(assay: dict, ladder: dict) -> dict:
         "cpu_only": assay["requirements"]["cpu_only"],
         "min_vram_gb": assay["requirements"]["min_vram_gb"],
         "reference_sec": assay["work"]["reference_sec"],
-        # compute phase alone on the reference card (setup, downloads and the
-        # warm-up floor are other phases): the part a per-GPU ratio scales
-        "compute_sec": assay["work"]["reference_sec"] * assay["work"]["phases_cu"]["compute"]
-                       / assay["work"]["reference_cu"],
+        "compute_sec": c - h,
         "spread_factor": assay["work"]["spread"]["factor"],
-        "compute_ratio": {r["gpu_id"]: r["compute_ratio"] for r in ladder["rows"]},
+        # the GPU's own part per card: the ladder adds the host part h flat to every
+        # card's compute, so the GPU ratio is (ratio x c - h) / (c - h)
+        "compute_ratio": {r["gpu_id"]: (r["compute_ratio"] * c - h) / (c - h) for r in ladder["rows"]},
     }
 
 
