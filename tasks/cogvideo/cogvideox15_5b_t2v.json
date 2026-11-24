@@ -1,7 +1,7 @@
 {
   "task": "cogvideo/cogvideox15_5b_t2v",
   "fields": {
-    "workload_type": "diffusion_inference",
+    "workload_type": "video_diffusion_inference",
     "mode": "inference",
     "framework": "pytorch",
     "inference_engine": "diffusers",

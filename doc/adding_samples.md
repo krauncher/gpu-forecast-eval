@@ -112,7 +112,7 @@ Leave out a field you cannot state.
 
 | Field | Values / meaning |
 |---|---|
-| `workload_type` | `llm_inference`, `batch_inference`, `diffusion_inference`, `cv_training`, `ai_training`, `lora_training`, `object_detection`, `segmentation`, `graph_nn`, `gan`, `tts`, `rl`, `diffusion_training`, `3d_render`; `training` / `inference` when the model fits none of them (e.g. an MLP or an RNN); `unknown` when the file runs no task |
+| `workload_type` | `llm_inference`, `batch_inference`, `image_diffusion_inference`, `video_diffusion_inference`, `cv_training`, `ai_training`, `lora_training`, `object_detection`, `segmentation`, `graph_nn`, `gan`, `tts`, `rl`, `diffusion_training`, `3d_render`; `training` / `inference` when the model fits none of them (e.g. an MLP or an RNN); `unknown` when the file runs no task |
 | `mode` | `training`, `inference`, or `null` for non-ML compute |
 | `framework` | `pytorch`, `tensorflow`, `jax`, ... |
 | `precision` | `fp32`, `fp16`, `bf16`, `fp8`, `int8`, `int4`, ... — what the code computes in (no setting = `fp32`) |

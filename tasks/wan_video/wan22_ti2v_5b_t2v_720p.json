@@ -1,10 +1,10 @@
 {
   "task": "wan_video/wan22_ti2v_5b_t2v_720p",
   "fields": {
-    "workload_type": "diffusion_inference",
+    "workload_type": "video_diffusion_inference",
     "mode": "inference",
     "framework": "pytorch",
-    "inference_engine": null,
+    "inference_engine": "wan_native",
     "precision": "bf16",
     "params_billions": 5,
     "batch_size": 1,
